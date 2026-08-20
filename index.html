@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Keluarga Besar Nyai Mah</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --primary: #0f766e;
+      --primary-dark: #115e59;
+      --primary-light: #ccfbf1;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --radius: 16px;
+      --shadow: 0 20px 25px -5px rgba(15, 118, 110, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+    }
+
+    * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; transition: all 0.2s ease; }
+    body { background: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%); margin: 0; padding: 24px 12px; min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; }
+    
+    .card-container {
+      background: var(--surface);
+      width: 100%;
+      max-width: 480px;
+      border-radius: var(--radius);
+      padding: 28px;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+    }
+
+    /* Header Profile Tampil Selalu di Atas */
+    .header-profile {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: linear-gradient(135deg, #0f766e, #047857);
+      padding: 18px;
+      border-radius: 14px;
+      color: white;
+      margin-bottom: 20px;
+      box-shadow: 0 10px 15px -3px rgba(15, 118, 110, 0.3);
+    }
+    .profile-img {
+      width: 68px;
+      height: 68px;
+      border-radius: 12px;
+      object-fit: cover;
+      border: 2px solid #ffffff;
+    }
+    .profile-title { font-size: 18px; font-weight: 800; line-height: 1.25; letter-spacing: -0.02em; }
+    .profile-subtitle { font-size: 12px; opacity: 0.85; margin-top: 4px; }
+
+    /* Buttons Main */
+    .btn-main {
+      width: 100%;
+      background: var(--surface);
+      color: var(--primary);
+      border: 2px solid var(--primary-light);
+      padding: 16px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .btn-main:hover {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+
+    /* Nav Tabs */
+    .nav-tabs {
+      display: flex;
+      background: #f1f5f9;
+      padding: 4px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      gap: 4px;
+    }
+    .nav-item {
+      flex: 1;
+      text-align: center;
+      padding: 8px 4px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: 8px;
+    }
+    .nav-item.active {
+      background: var(--surface);
+      color: var(--primary);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    /* Form & List Styles */
+    .form-title { font-size: 16px; color: var(--primary-dark); font-weight: 800; margin-bottom: 16px; }
+    .section-title {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--primary);
+      font-weight: 800;
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+    .form-group { margin-bottom: 12px; }
+    label { display: block; font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+    input, select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+      background-color: #f8fafc;
+      outline: none;
+    }
+    input:focus, select:focus {
+      border-color: var(--primary);
+      background-color: #fff;
+      box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15);
+    }
+
+    .child-row {
+      display: grid;
+      grid-template-columns: 1fr 65px 110px 36px;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .btn-add-child {
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      border: none;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
+    }
+    .btn-remove {
+      background: #fee2e2;
+      color: #dc2626;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .btn-submit {
+      width: 100%;
+      background: linear-gradient(135deg, #0f766e, #047857);
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      margin-top: 24px;
+      box-shadow: 0 4px 12px rgba(15, 118, 110, 0.25);
+    }
+    .btn-submit:hover { opacity: 0.95; transform: translateY(-1px); }
+
+    .data-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 8px;
+      background: #ffffff;
+    }
+    .data-card:hover { border-color: var(--primary); }
+    .data-card-title { font-weight: 700; color: var(--text); font-size: 14px; }
+    .data-card-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    .badge-deceased {
+      display: inline-block;
+      font-size: 10px;
+      background: #fecdd3;
+      color: #9f1239;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 700;
+      margin-left: 6px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card-container">
+
+    <!-- HEADER UTAMA (TAMPIL SELALU) -->
+    <div class="header-profile">
+      <div>
+        <!-- <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150" alt="Nyai Mah" class="profile-img">-->
+		<img src="nyai.jpg" alt="Nyai Mah" class="profile-img">
+      </div>
+      <div>
+        <div class="profile-title">Keluarga Besar<br>Nyai Mah</div>
+        <div class="profile-subtitle">Sistem Silsilah Keluarga</div>
+      </div>
+    </div>
+
+    <!-- PAGE 1: MENU UTAMA -->
+    <div id="page-main">
+      <button class="btn-main" onclick="showPage('form')">
+        <span>📋 Data Keluarga</span>
+        <span>→</span>
+      </button>
+      <button class="btn-main" onclick="alert('Fitur Pohon Silsilah dapat dikembangkan sesuai kebutuhan!')">
+        <span>🌳 Pohon Silsilah</span>
+        <span>→</span>
+      </button>
+    </div>
+
+    <!-- PAGE 2: SUB-MENU (FORM / CARI / EDIT) -->
+    <div id="page-form" style="display: none;">
+      
+      <!-- NAVIGASI TAB -->
+      <div class="nav-tabs">
+        <div class="nav-item" onclick="showPage('main')">🏠 Utama</div>
+        <div class="nav-item active" id="tab-tambah" onclick="setMode('tambah')">➕ Tambah</div>
+        <div class="nav-item" id="tab-cari" onclick="setMode('cari')">🔍 Cari</div>
+        <div class="nav-item" id="tab-edit" onclick="setMode('edit')">✏️ Edit</div>
+      </div>
+
+      <!-- KONTEN FORM -->
+      <div id="form-container">
+        <div class="form-title" id="form-title-text">➕ Tambah Data Keluarga</div>
+
+        <form id="familyForm">
+          <input type="hidden" id="editId">
+
+          <div class="section-title">Data Pribadi</div>
+          <div class="form-group">
+            <label>Nama Lengkap*</label>
+            <input type="text" id="fullName" placeholder="Masukkan nama lengkap" required>
+          </div>
+          <div class="form-group">
+            <label>Nama Panggilan</label>
+            <input type="text" id="nickname" placeholder="Nama panggilan">
+          </div>
+          <div class="form-group">
+            <label>Tanggal Lahir</label>
+            <input type="date" id="birthDate">
+          </div>
+          <div class="form-group">
+            <label>Jenis Kelamin*</label>
+            <select id="gender">
+              <option value="M">Laki-laki</option>
+              <option value="F">Perempuan</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Status Anggota*</label>
+            <select id="isAlive">
+              <option value="true">Masih Ada (Hidup)</option>
+              <option value="false">Meninggal Dunia</option>
+            </select>
+          </div>
+
+          <div class="section-title">Keluarga Inti (Orang Tua)</div>
+          <div class="form-group">
+            <label>Nama Ayah</label>
+            <select id="fatherId"><option value="">-- Pilih Ayah --</option></select>
+          </div>
+          <div class="form-group">
+            <label>Nama Ibu</label>
+            <select id="motherId"><option value="">-- Pilih Ibu --</option></select>
+          </div>
+
+          <div class="section-title">Pasangan</div>
+          <div class="form-group">
+            <label id="spouseLabel">Nama Pasangan <span id="spouseHint" style="color: var(--primary); font-weight: 700;">(Istri - Perempuan)</span></label>
+            <input type="text" id="spouseName" placeholder="Nama istri">
+          </div>
+          <div class="form-group">
+            <label id="spouseBirthLabel">Tgl Lahir Pasangan</label>
+            <input type="date" id="spouseBirthDate">
+          </div>
+
+          <div class="section-title">Anak-Anak</div>
+          <div id="childrenContainer"></div>
+          <button type="button" class="btn-add-child" onclick="addChildRow()">+ Tambah Baris Anak</button>
+
+          <div class="section-title">Kontak & Alamat</div>
+          <div class="form-group">
+            <label>Alamat</label>
+            <input type="text" id="address" placeholder="Alamat tempat tinggal">
+          </div>
+          <div class="form-group">
+            <label>Kota</label>
+            <input type="text" id="city" placeholder="Kota/Kabupaten">
+          </div>
+          <div class="form-group">
+            <label>No. Handphone</label>
+            <input type="text" id="phone" placeholder="08xxxxxxxxxx">
+          </div>
+
+          <button type="submit" class="btn-submit" id="submitBtn">SIMPAN DATA</button>
+        </form>
+      </div>
+
+      <!-- KONTEN CARI / EDIT LIST -->
+      <div id="search-edit-container" style="display: none;">
+        <div class="form-title" id="list-title">🔍 Cari Data Keluarga</div>
+        <div class="form-group">
+          <input type="text" id="searchInput" placeholder="Cari nama anggota..." onkeyup="filterList()">
+        </div>
+        <div id="dataList"></div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://dvukfisljpafjlgcqedy.supabase.co'; 
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR2dWtmaXNsanBhZmpsZ2NxZWR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxMzA3MDQsImV4cCI6MjEwMjcwNjcwNH0.P8VSAVIYTuGkk3cWVvBLEFV1jBMLskLsgceulPijs14'; 
+
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    let allMembers = [];
+    let currentMode = 'tambah';
+
+    function updateSpouseLabel() {
+      const gender = document.getElementById('gender').value;
+      const spouseHint = document.getElementById('spouseHint');
+      const spouseInput = document.getElementById('spouseName');
+
+      if (gender === 'M') {
+        spouseHint.innerText = '(Istri - Perempuan)';
+        spouseInput.placeholder = 'Nama istri';
+      } else {
+        spouseHint.innerText = '(Suami - Laki-laki)';
+        spouseInput.placeholder = 'Nama suami';
+      }
+    }
+
+    document.getElementById('gender').addEventListener('change', updateSpouseLabel);
+
+    function showPage(page) {
+      document.getElementById('page-main').style.display = page === 'main' ? 'block' : 'none';
+      document.getElementById('page-form').style.display = page === 'form' ? 'block' : 'none';
+      if (page === 'form') {
+        loadData();
+        setMode('tambah');
+      }
+    }
+
+    function setMode(mode) {
+      currentMode = mode;
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      
+      const formContainer = document.getElementById('form-container');
+      const searchContainer = document.getElementById('search-edit-container');
+
+      if (mode === 'tambah') {
+        document.getElementById('tab-tambah').classList.add('active');
+        formContainer.style.display = 'block';
+        searchContainer.style.display = 'none';
+        resetForm();
+      } else if (mode === 'cari' || mode === 'edit') {
+        document.getElementById(mode === 'cari' ? 'tab-cari' : 'tab-edit').classList.add('active');
+        formContainer.style.display = 'none';
+        searchContainer.style.display = 'block';
+        document.getElementById('list-title').innerText = mode === 'cari' ? '🔍 Cari Data Keluarga' : '✏️ Pilih Data Untuk Di-edit';
+        renderList();
+      }
+    }
+
+    function addChildRow(name = '', gender = 'M', dob = '') {
+      const container = document.getElementById('childrenContainer');
+      const div = document.createElement('div');
+      div.className = 'child-row';
+      
+      div.innerHTML = `
+        <input type="text" placeholder="Nama anak" value="${name}" class="child-name">
+        <select class="child-gender">
+          <option value="M" ${gender === 'M' ? 'selected' : ''}>L</option>
+          <option value="F" ${gender === 'F' ? 'selected' : ''}>P</option>
+        </select>
+        <input type="date" value="${dob}" class="child-dob">
+        <button type="button" class="btn-remove" onclick="this.parentElement.remove()">✕</button>
+      `;
+      container.appendChild(div);
+    }
+
+    async function loadData() {
+      const { data, error } = await supabaseClient.from('members').select('*').order('full_name', { ascending: true });
+      if (!error && data) {
+        allMembers = data;
+        populateParents();
+      }
+    }
+
+    function populateParents() {
+      const fatherSel = document.getElementById('fatherId');
+      const motherSel = document.getElementById('motherId');
+      fatherSel.innerHTML = '<option value="">-- Pilih Ayah --</option>';
+      motherSel.innerHTML = '<option value="">-- Pilih Ibu --</option>';
+
+      allMembers.forEach(m => {
+        const prefix = m.is_alive === false ? (m.gender === 'M' ? 'Alm. ' : 'Almh. ') : '';
+        if (m.gender === 'M') fatherSel.innerHTML += `<option value="${m.id}">${prefix}${m.full_name}</option>`;
+        if (m.gender === 'F') motherSel.innerHTML += `<option value="${m.id}">${prefix}${m.full_name}</option>`;
+      });
+    }
+
+    function renderList(filter = '') {
+      const listEl = document.getElementById('dataList');
+      listEl.innerHTML = '';
+
+      const filtered = allMembers.filter(m => m.full_name.toLowerCase().includes(filter.toLowerCase()));
+
+      if (filtered.length === 0) {
+        listEl.innerHTML = '<div style="font-size:12px; color:#64748b; text-align:center; padding:20px;">Data tidak ditemukan.</div>';
+        return;
+      }
+
+      filtered.forEach(m => {
+        const item = document.createElement('div');
+        item.className = 'data-card';
+        
+        let namePrefix = '';
+        let badgeHtml = '';
+        if (m.is_alive === false) {
+          namePrefix = m.gender === 'M' ? 'Alm. ' : 'Almh. ';
+          badgeHtml = `<span class="badge-deceased">${m.gender === 'M' ? 'Almarhum' : 'Almarhumah'}</span>`;
+        }
+
+        item.innerHTML = `
+          <div class="data-card-title">${namePrefix}${m.full_name} (${m.nickname || '-'}) ${badgeHtml}</div>
+          <div class="data-card-sub">HP: ${m.phone || '-'} | Alamat: ${m.address || '-'}</div>
+        `;
+
+        if (currentMode === 'edit') {
+          item.style.cursor = 'pointer';
+          item.onclick = () => selectForEdit(m);
+        }
+        listEl.appendChild(item);
+      });
+    }
+
+    function filterList() {
+      renderList(document.getElementById('searchInput').value);
+    }
+
+    function selectForEdit(m) {
+      document.getElementById('editId').value = m.id;
+      document.getElementById('fullName').value = m.full_name || '';
+      document.getElementById('nickname').value = m.nickname || '';
+      document.getElementById('birthDate').value = m.birth_date || '';
+      document.getElementById('gender').value = m.gender || 'M';
+      document.getElementById('isAlive').value = m.is_alive !== false ? 'true' : 'false';
+      document.getElementById('fatherId').value = m.father_id || '';
+      document.getElementById('motherId').value = m.mother_id || '';
+      document.getElementById('spouseName').value = m.spouse_name || '';
+      document.getElementById('spouseBirthDate').value = m.spouse_birth_date || '';
+      document.getElementById('address').value = m.address || '';
+      document.getElementById('city').value = m.city || '';
+      document.getElementById('phone').value = m.phone || '';
+
+      updateSpouseLabel();
+
+      document.getElementById('form-container').style.display = 'block';
+      document.getElementById('search-edit-container').style.display = 'none';
+      document.getElementById('form-title-text').innerText = '✏️ Edit Data Keluarga';
+      document.getElementById('submitBtn').innerText = 'UPDATE DATA';
+    }
+
+    function resetForm() {
+      document.getElementById('editId').value = '';
+      document.getElementById('familyForm').reset();
+      document.getElementById('childrenContainer').innerHTML = '';
+      document.getElementById('form-title-text').innerText = '➕ Tambah Data Keluarga';
+      document.getElementById('submitBtn').innerText = 'SIMPAN DATA';
+      updateSpouseLabel();
+      addChildRow();
+    }
+
+    document.getElementById('familyForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('submitBtn');
+      const editId = document.getElementById('editId').value;
+      btn.innerText = 'MEMPROSES...';
+      btn.disabled = true;
+
+      const payload = {
+        full_name: document.getElementById('fullName').value,
+        nickname: document.getElementById('nickname').value || null,
+        birth_date: document.getElementById('birthDate').value || null,
+        gender: document.getElementById('gender').value,
+        is_alive: document.getElementById('isAlive').value === 'true',
+        father_id: document.getElementById('fatherId').value || null,
+        mother_id: document.getElementById('motherId').value || null,
+        address: document.getElementById('address').value || null,
+        phone: document.getElementById('phone').value || null
+      };
+
+      const spouseName = document.getElementById('spouseName').value;
+      const spouseBirthDate = document.getElementById('spouseBirthDate').value;
+      const city = document.getElementById('city').value;
+
+      if (spouseName) payload.spouse_name = spouseName;
+      if (spouseBirthDate) payload.spouse_birth_date = spouseBirthDate;
+      if (city) payload.city = city;
+
+      let error;
+      if (editId) {
+        const res = await supabaseClient.from('members').update(payload).eq('id', editId);
+        error = res.error;
+      } else {
+        const res = await supabaseClient.from('members').insert([payload]);
+        error = res.error;
+      }
+
+      btn.disabled = false;
+
+      if (error) {
+        alert('Gagal: ' + error.message);
+        btn.innerText = editId ? 'UPDATE DATA' : 'SIMPAN DATA';
+      } else {
+        alert(editId ? 'Data berhasil diperbarui!' : 'Data berhasil disimpan!');
+        await loadData();
+        setMode('tambah');
+      }
+    });
+
+    updateSpouseLabel();
+    addChildRow();
+  </script>
+</body>
+</html>
