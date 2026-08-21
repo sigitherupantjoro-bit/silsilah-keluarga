@@ -4,12 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Keluarga Besar Nyai Mah</title>
-  <!-- Favicon untuk Tab Browser -->
   <link rel="icon" type="image/jpeg" href="nyai.jpg">
-
-  <!-- Apple Touch Icon untuk Tampilan Pintasan / Home Screen HP -->
   <link rel="apple-touch-icon" href="nyai.jpg">
-  <!-- Web App Manifest untuk Tampilan seperti Aplikasi APK -->
   <link rel="manifest" href="manifest.json">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -44,7 +40,6 @@
       border: 1px solid rgba(255, 255, 255, 0.8);
     }
 
-    /* Header Profile Tampil Selalu di Atas */
     .header-profile {
       display: flex;
       align-items: center;
@@ -66,7 +61,6 @@
     .profile-title { font-size: 18px; font-weight: 800; line-height: 1.25; letter-spacing: -0.02em; }
     .profile-subtitle { font-size: 12px; opacity: 0.85; margin-top: 4px; }
 
-    /* Buttons Main */
     .btn-main {
       width: 100%;
       background: var(--surface);
@@ -89,7 +83,6 @@
       transform: translateY(-2px);
     }
 
-    /* Nav Tabs */
     .nav-tabs {
       display: flex;
       background: #f1f5f9;
@@ -114,7 +107,6 @@
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
 
-    /* Form & List Styles */
     .form-title { font-size: 16px; color: var(--primary-dark); font-weight: 800; margin-bottom: 16px; }
     .section-title {
       font-size: 12px;
@@ -142,20 +134,12 @@
       box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15);
     }
 
-    /* Dropdown Tanggal Lahir */
     .date-select-group {
       display: grid;
       grid-template-columns: 75px 1fr 90px;
       gap: 6px;
     }
 
-    /* Grid Anak */
-    .child-row {
-      display: grid;
-      grid-template-columns: 1fr 50px 32px;
-      gap: 6px;
-      margin-bottom: 6px;
-    }
     .child-row-top {
       display: grid;
       grid-template-columns: 1fr 50px 32px;
@@ -207,16 +191,17 @@
     }
     .btn-submit:hover { opacity: 0.95; transform: translateY(-1px); }
 
+    /* Data Card & Actions */
     .data-card {
       border: 1px solid var(--border);
       border-radius: 10px;
-      padding: 12px;
-      margin-bottom: 8px;
+      padding: 14px;
+      margin-bottom: 10px;
       background: #ffffff;
     }
     .data-card:hover { border-color: var(--primary); }
     .data-card-title { font-weight: 700; color: var(--text); font-size: 14px; }
-    .data-card-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    .data-card-sub { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
     .badge-deceased {
       display: inline-block;
       font-size: 10px;
@@ -226,6 +211,65 @@
       border-radius: 4px;
       font-weight: 700;
       margin-left: 6px;
+    }
+    .card-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .btn-card {
+      flex: 1;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      text-align: center;
+    }
+    .btn-detail { background: var(--primary-light); color: var(--primary-dark); }
+    .btn-edit-action { background: #e0f2fe; color: #0369a1; }
+
+    /* Modal Detail Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15, 23, 42, 0.6);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+      z-index: 999;
+    }
+    .modal-content {
+      background: #fff;
+      width: 100%;
+      max-width: 440px;
+      max-height: 85vh;
+      overflow-y: auto;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+    }
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      padding: 8px 0;
+      font-size: 13px;
+    }
+    .detail-label { color: var(--text-muted); font-weight: 600; }
+    .detail-val { font-weight: 700; color: var(--text); text-align: right; }
+    .btn-close-modal {
+      width: 100%;
+      background: #f1f5f9;
+      color: var(--text);
+      border: none;
+      padding: 10px;
+      border-radius: 8px;
+      font-weight: 700;
+      margin-top: 16px;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -284,7 +328,6 @@
             <input type="text" id="nickname" placeholder="Nama panggilan">
           </div>
           
-          <!-- Tanggal Lahir Pribadi -->
           <div class="form-group">
             <label>Tanggal Lahir</label>
             <div class="date-select-group">
@@ -325,7 +368,6 @@
             <input type="text" id="spouseName" placeholder="Nama istri">
           </div>
           
-          <!-- Tanggal Lahir Pasangan -->
           <div class="form-group">
             <label id="spouseBirthLabel">Tgl Lahir Pasangan</label>
             <div class="date-select-group">
@@ -385,6 +427,15 @@
 
   </div>
 
+  <!-- MODAL POPUP DETAIL LENGKAP -->
+  <div id="detailModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <div class="form-title" style="margin-bottom: 10px;">📄 Detail Anggota Keluarga</div>
+      <div id="modalBody"></div>
+      <button class="btn-close-modal" onclick="closeDetailModal()">Tutup</button>
+    </div>
+  </div>
+
   <script>
     const SUPABASE_URL = 'https://dvukfisljpafjlgcqedy.supabase.co'; 
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR2dWtmaXNsanBhZmpsZ2NxZWR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxMzA3MDQsImV4cCI6MjEwMjcwNjcwNH0.P8VSAVIYTuGkk3cWVvBLEFV1jBMLskLsgceulPijs14'; 
@@ -398,7 +449,6 @@
       "Juli", "Agustus", "September", "Oktober", "November", "Desember"
     ];
 
-    // Fungsi Pengisi Dropdown Tanggal, Bulan, Tahun
     function populateDateDropdowns(dayId, monthId, yearId) {
       const daySel = document.getElementById(dayId);
       const monthSel = document.getElementById(monthId);
@@ -425,7 +475,6 @@
       }
     }
 
-    // Mengambil nilai string YYYY-MM-DD dari 3 Dropdown
     function getDateFromDropdowns(dayId, monthId, yearId) {
       const d = document.getElementById(dayId).value;
       const m = document.getElementById(monthId).value;
@@ -434,7 +483,6 @@
       return null;
     }
 
-    // Mengatur isi 3 Dropdown dari string YYYY-MM-DD
     function setDateToDropdowns(dayId, monthId, yearId, dateStr) {
       if (!dateStr) {
         document.getElementById(dayId).value = '';
@@ -448,6 +496,18 @@
         document.getElementById(monthId).value = parts[1];
         document.getElementById(dayId).value = parts[2];
       }
+    }
+
+    function formatDateIndo(dateStr) {
+      if (!dateStr) return '-';
+      const parts = dateStr.split('-');
+      if (parts.length === 3) {
+        const d = parseInt(parts[2], 10);
+        const m = MONTH_NAMES[parseInt(parts[1], 10) - 1];
+        const y = parts[0];
+        return `${d} ${m} ${y}`;
+      }
+      return dateStr;
     }
 
     function updateMap() {
@@ -591,18 +651,65 @@
         item.innerHTML = `
           <div class="data-card-title">${namePrefix}${m.full_name} (${m.nickname || '-'}) ${badgeHtml}</div>
           <div class="data-card-sub">HP: ${m.phone || '-'} | Alamat: ${m.address || '-'}, ${m.city || ''}</div>
+          <div class="card-actions">
+            <button class="btn-card btn-detail" onclick="viewDetail('${m.id}')">👁️ Detail</button>
+            ${currentMode === 'edit' ? `<button class="btn-card btn-edit-action" onclick="selectForEditById('${m.id}')">✏️ Edit</button>` : ''}
+          </div>
         `;
 
-        if (currentMode === 'edit') {
-          item.style.cursor = 'pointer';
-          item.onclick = () => selectForEdit(m);
-        }
         listEl.appendChild(item);
       });
     }
 
     function filterList() {
       renderList(document.getElementById('searchInput').value);
+    }
+
+    function viewDetail(memberId) {
+      const m = allMembers.find(item => item.id === memberId);
+      if (!m) return;
+
+      const father = allMembers.find(item => item.id === m.father_id);
+      const mother = allMembers.find(item => item.id === m.mother_id);
+
+      let mapEmbedHtml = '';
+      let queryLoc = m.coordinates || [m.address, m.city].filter(Boolean).join(', ');
+      if (queryLoc) {
+        mapEmbedHtml = `
+          <div style="margin-top: 10px;">
+            <iframe width="100%" height="180" style="border:0; border-radius:8px;" loading="lazy" src="https://maps.google.com/maps?q=${encodeURIComponent(queryLoc)}&t=&z=15&ie=UTF8&iwloc=&output=embed"></iframe>
+          </div>
+        `;
+      }
+
+      const modalBody = document.getElementById('modalBody');
+      modalBody.innerHTML = `
+        <div class="detail-row"><span class="detail-label">Nama Lengkap</span><span class="detail-val">${m.full_name}</span></div>
+        <div class="detail-row"><span class="detail-label">Nama Panggilan</span><span class="detail-val">${m.nickname || '-'}</span></div>
+        <div class="detail-row"><span class="detail-label">Status</span><span class="detail-val">${m.is_alive !== false ? 'Hidup' : 'Meninggal Dunia'}</span></div>
+        <div class="detail-row"><span class="detail-label">Jenis Kelamin</span><span class="detail-val">${m.gender === 'M' ? 'Laki-laki' : 'Perempuan'}</span></div>
+        <div class="detail-row"><span class="detail-label">Tanggal Lahir</span><span class="detail-val">${formatDateIndo(m.birth_date)}</span></div>
+        <div class="detail-row"><span class="detail-label">Ayah</span><span class="detail-val">${father ? father.full_name : '-'}</span></div>
+        <div class="detail-row"><span class="detail-label">Ibu</span><span class="detail-val">${mother ? mother.full_name : '-'}</span></div>
+        <div class="detail-row"><span class="detail-label">Pasangan</span><span class="detail-val">${m.spouse_name || '-'}</span></div>
+        <div class="detail-row"><span class="detail-label">Tgl Lahir Pasangan</span><span class="detail-val">${formatDateIndo(m.spouse_birth_date)}</span></div>
+        <div class="detail-row"><span class="detail-label">No. HP</span><span class="detail-val">${m.phone || '-'}</span></div>
+        <div class="detail-row"><span class="detail-label">Alamat</span><span class="detail-val">${m.address || '-'}</span></div>
+        <div class="detail-row"><span class="detail-label">Kota</span><span class="detail-val">${m.city || '-'}</span></div>
+        <div class="detail-row"><span class="detail-label">Titik Koordinat</span><span class="detail-val">${m.coordinates || '-'}</span></div>
+        ${mapEmbedHtml}
+      `;
+
+      document.getElementById('detailModal').style.display = 'flex';
+    }
+
+    function closeDetailModal() {
+      document.getElementById('detailModal').style.display = 'none';
+    }
+
+    function selectForEditById(memberId) {
+      const m = allMembers.find(item => item.id === memberId);
+      if (m) selectForEdit(m);
     }
 
     function selectForEdit(m) {
@@ -699,7 +806,6 @@
       }
     });
 
-    // Inisialisasi awal dropdown tanggal lahir utama & pasangan
     populateDateDropdowns('dob_day_main', 'dob_month_main', 'dob_year_main');
     populateDateDropdowns('dob_day_spouse', 'dob_month_spouse', 'dob_year_spouse');
 
