@@ -142,16 +142,32 @@
       box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15);
     }
 
-    /* Kolom Nama Anak Diperlebar di sini */
+    /* Dropdown Tanggal Lahir */
+    .date-select-group {
+      display: grid;
+      grid-template-columns: 75px 1fr 90px;
+      gap: 6px;
+    }
+
+    /* Grid Anak */
     .child-row {
       display: grid;
-      grid-template-columns: 2fr 60px 105px 32px;
-      gap: 4px;
-      margin-bottom: 8px;
+      grid-template-columns: 1fr 50px 32px;
+      gap: 6px;
+      margin-bottom: 6px;
     }
-    .child-row input, .child-row select {
-      padding: 8px 6px;
-      font-size: 12px;
+    .child-row-top {
+      display: grid;
+      grid-template-columns: 1fr 50px 32px;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+    .child-container-item {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      padding: 8px;
+      border-radius: 8px;
+      margin-bottom: 8px;
     }
 
     .btn-add-child {
@@ -173,6 +189,7 @@
       font-weight: bold;
       cursor: pointer;
       padding: 0;
+      height: 38px;
     }
 
     .btn-submit {
@@ -216,7 +233,7 @@
 
   <div class="card-container">
 
-    <!-- HEADER UTAMA (TAMPIL SELALU) -->
+    <!-- HEADER UTAMA -->
     <div class="header-profile">
       <div>
         <img src="nyai.jpg" alt="Nyai Mah" class="profile-img">
@@ -266,10 +283,17 @@
             <label>Nama Panggilan</label>
             <input type="text" id="nickname" placeholder="Nama panggilan">
           </div>
+          
+          <!-- Tanggal Lahir Pribadi -->
           <div class="form-group">
             <label>Tanggal Lahir</label>
-            <input type="date" id="birthDate">
+            <div class="date-select-group">
+              <select id="dob_day_main"><option value="">Tgl</option></select>
+              <select id="dob_month_main"><option value="">Bulan</option></select>
+              <select id="dob_year_main"><option value="">Tahun</option></select>
+            </div>
           </div>
+
           <div class="form-group">
             <label>Jenis Kelamin*</label>
             <select id="gender">
@@ -300,9 +324,15 @@
             <label id="spouseLabel">Nama Pasangan <span id="spouseHint" style="color: var(--primary); font-weight: 700;">(Istri - Perempuan)</span></label>
             <input type="text" id="spouseName" placeholder="Nama istri">
           </div>
+          
+          <!-- Tanggal Lahir Pasangan -->
           <div class="form-group">
             <label id="spouseBirthLabel">Tgl Lahir Pasangan</label>
-            <input type="date" id="spouseBirthDate">
+            <div class="date-select-group">
+              <select id="dob_day_spouse"><option value="">Tgl</option></select>
+              <select id="dob_month_spouse"><option value="">Bulan</option></select>
+              <select id="dob_year_spouse"><option value="">Tahun</option></select>
+            </div>
           </div>
 
           <div class="section-title">Anak-Anak</div>
@@ -311,11 +341,9 @@
 
           <div class="section-title">Kontak & Alamat</div>
           <div class="form-group">
-            <!-- Input Alamat -->
             <label for="address">Alamat Lengkap:</label>
             <input type="text" id="address" placeholder="Masukkan alamat lengkap..." oninput="updateMap()">
 
-            <!-- Container Peta Google Maps -->
             <div style="margin-top: 10px;">
                 <iframe 
                     id="map-frame" 
@@ -364,6 +392,63 @@
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     let allMembers = [];
     let currentMode = 'tambah';
+
+    const MONTH_NAMES = [
+      "Januari", "Februari", "Maret", "April", "Mei", "Juni", 
+      "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+    ];
+
+    // Fungsi Pengisi Dropdown Tanggal, Bulan, Tahun
+    function populateDateDropdowns(dayId, monthId, yearId) {
+      const daySel = document.getElementById(dayId);
+      const monthSel = document.getElementById(monthId);
+      const yearSel = document.getElementById(yearId);
+
+      if (!daySel || !monthSel || !yearSel) return;
+
+      daySel.innerHTML = '<option value="">Tgl</option>';
+      for (let i = 1; i <= 31; i++) {
+        const val = String(i).padStart(2, '0');
+        daySel.innerHTML += `<option value="${val}">${i}</option>`;
+      }
+
+      monthSel.innerHTML = '<option value="">Bulan</option>';
+      MONTH_NAMES.forEach((m, idx) => {
+        const val = String(idx + 1).padStart(2, '0');
+        monthSel.innerHTML += `<option value="${val}">${m}</option>`;
+      });
+
+      yearSel.innerHTML = '<option value="">Tahun</option>';
+      const currentYear = new Date().getFullYear();
+      for (let y = currentYear; y >= 1900; y--) {
+        yearSel.innerHTML += `<option value="${y}">${y}</option>`;
+      }
+    }
+
+    // Mengambil nilai string YYYY-MM-DD dari 3 Dropdown
+    function getDateFromDropdowns(dayId, monthId, yearId) {
+      const d = document.getElementById(dayId).value;
+      const m = document.getElementById(monthId).value;
+      const y = document.getElementById(yearId).value;
+      if (d && m && y) return `${y}-${m}-${d}`;
+      return null;
+    }
+
+    // Mengatur isi 3 Dropdown dari string YYYY-MM-DD
+    function setDateToDropdowns(dayId, monthId, yearId, dateStr) {
+      if (!dateStr) {
+        document.getElementById(dayId).value = '';
+        document.getElementById(monthId).value = '';
+        document.getElementById(yearId).value = '';
+        return;
+      }
+      const parts = dateStr.split('-');
+      if (parts.length === 3) {
+        document.getElementById(yearId).value = parts[0];
+        document.getElementById(monthId).value = parts[1];
+        document.getElementById(dayId).value = parts[2];
+      }
+    }
 
     function updateMap() {
       const address = document.getElementById('address').value.trim();
@@ -429,21 +514,35 @@
       }
     }
 
+    let childCounter = 0;
     function addChildRow(name = '', gender = 'M', dob = '') {
+      childCounter++;
       const container = document.getElementById('childrenContainer');
-      const div = document.createElement('div');
-      div.className = 'child-row';
+      const card = document.createElement('div');
+      card.className = 'child-container-item';
       
-      div.innerHTML = `
-        <input type="text" placeholder="Nama anak" value="${name}" class="child-name">
-        <select class="child-gender">
-          <option value="M" ${gender === 'M' ? 'selected' : ''}>L</option>
-          <option value="F" ${gender === 'F' ? 'selected' : ''}>P</option>
-        </select>
-        <input type="date" value="${dob}" class="child-dob">
-        <button type="button" class="btn-remove" onclick="this.parentElement.remove()">✕</button>
+      const dayId = `dob_day_child_${childCounter}`;
+      const monthId = `dob_month_child_${childCounter}`;
+      const yearId = `dob_year_child_${childCounter}`;
+
+      card.innerHTML = `
+        <div class="child-row-top">
+          <input type="text" placeholder="Nama anak" value="${name}" class="child-name">
+          <select class="child-gender">
+            <option value="M" ${gender === 'M' ? 'selected' : ''}>L</option>
+            <option value="F" ${gender === 'F' ? 'selected' : ''}>P</option>
+          </select>
+          <button type="button" class="btn-remove" onclick="this.closest('.child-container-item').remove()">✕</button>
+        </div>
+        <div class="date-select-group">
+          <select id="${dayId}" class="child-day"><option value="">Tgl</option></select>
+          <select id="${monthId}" class="child-month"><option value="">Bulan</option></select>
+          <select id="${yearId}" class="child-year"><option value="">Tahun</option></select>
+        </div>
       `;
-      container.appendChild(div);
+      container.appendChild(card);
+      populateDateDropdowns(dayId, monthId, yearId);
+      if (dob) setDateToDropdowns(dayId, monthId, yearId, dob);
     }
 
     async function loadData() {
@@ -510,13 +609,15 @@
       document.getElementById('editId').value = m.id;
       document.getElementById('fullName').value = m.full_name || '';
       document.getElementById('nickname').value = m.nickname || '';
-      document.getElementById('birthDate').value = m.birth_date || '';
+      
+      setDateToDropdowns('dob_day_main', 'dob_month_main', 'dob_year_main', m.birth_date);
+      setDateToDropdowns('dob_day_spouse', 'dob_month_spouse', 'dob_year_spouse', m.spouse_birth_date);
+
       document.getElementById('gender').value = m.gender || 'M';
       document.getElementById('isAlive').value = m.is_alive !== false ? 'true' : 'false';
       document.getElementById('fatherId').value = m.father_id || '';
       document.getElementById('motherId').value = m.mother_id || '';
       document.getElementById('spouseName').value = m.spouse_name || '';
-      document.getElementById('spouseBirthDate').value = m.spouse_birth_date || '';
       document.getElementById('address').value = m.address || '';
       document.getElementById('coordinates').value = m.coordinates || '';
       document.getElementById('city').value = m.city || '';
@@ -534,6 +635,10 @@
     function resetForm() {
       document.getElementById('editId').value = '';
       document.getElementById('familyForm').reset();
+      
+      setDateToDropdowns('dob_day_main', 'dob_month_main', 'dob_year_main', '');
+      setDateToDropdowns('dob_day_spouse', 'dob_month_spouse', 'dob_year_spouse', '');
+
       document.getElementById('coordinates').value = '';
       document.getElementById('childrenContainer').innerHTML = '';
       document.getElementById('form-title-text').innerText = '➕ Tambah Data Keluarga';
@@ -550,10 +655,13 @@
       btn.innerText = 'MEMPROSES...';
       btn.disabled = true;
 
+      const mainBirthDate = getDateFromDropdowns('dob_day_main', 'dob_month_main', 'dob_year_main');
+      const spouseBirthDate = getDateFromDropdowns('dob_day_spouse', 'dob_month_spouse', 'dob_year_spouse');
+
       const payload = {
         full_name: document.getElementById('fullName').value,
         nickname: document.getElementById('nickname').value || null,
-        birth_date: document.getElementById('birthDate').value || null,
+        birth_date: mainBirthDate,
         gender: document.getElementById('gender').value,
         is_alive: document.getElementById('isAlive').value === 'true',
         father_id: document.getElementById('fatherId').value || null,
@@ -564,7 +672,6 @@
       };
 
       const spouseName = document.getElementById('spouseName').value;
-      const spouseBirthDate = document.getElementById('spouseBirthDate').value;
       const city = document.getElementById('city').value;
 
       if (spouseName) payload.spouse_name = spouseName;
@@ -591,6 +698,10 @@
         setMode('tambah');
       }
     });
+
+    // Inisialisasi awal dropdown tanggal lahir utama & pasangan
+    populateDateDropdowns('dob_day_main', 'dob_month_main', 'dob_year_main');
+    populateDateDropdowns('dob_day_spouse', 'dob_month_spouse', 'dob_year_spouse');
 
     updateSpouseLabel();
     addChildRow();
