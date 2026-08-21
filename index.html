@@ -4,16 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Keluarga Besar Nyai Mah</title>
-<!-- Favicon untuk Tab Browser -->
-<link rel="icon" type="image/jpeg" href="nyai.jpg">
+  <!-- Favicon untuk Tab Browser -->
+  <link rel="icon" type="image/jpeg" href="nyai.jpg">
 
-<!-- Apple Touch Icon untuk Tampilan Pintasan / Home Screen HP -->
-<link rel="apple-touch-icon" href="nyai.jpg">
-<!-- Web App Manifest untuk Tampilan seperti Aplikasi APK -->
-<link rel="manifest" href="manifest.json">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#0f766e">	
+  <!-- Apple Touch Icon untuk Tampilan Pintasan / Home Screen HP -->
+  <link rel="apple-touch-icon" href="nyai.jpg">
+  <!-- Web App Manifest untuk Tampilan seperti Aplikasi APK -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#0f766e">	
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
@@ -213,8 +213,7 @@
     <!-- HEADER UTAMA (TAMPIL SELALU) -->
     <div class="header-profile">
       <div>
-        <!-- <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150" alt="Nyai Mah" class="profile-img">-->
-		<img src="nyai.jpg" alt="Nyai Mah" class="profile-img">
+        <img src="nyai.jpg" alt="Nyai Mah" class="profile-img">
       </div>
       <div>
         <div class="profile-title">Keluarga Besar<br>Nyai Mah</div>
@@ -226,11 +225,11 @@
     <div id="page-main">
       <button class="btn-main" onclick="showPage('form')">
         <span>📋 Data Keluarga</span>
-        <span>→</span>
+        <span>➔</span>
       </button>
       <button class="btn-main" onclick="alert('Fitur Pohon Silsilah dapat dikembangkan sesuai kebutuhan!')">
         <span>🌳 Pohon Silsilah</span>
-        <span>→</span>
+        <span>➔</span>
       </button>
     </div>
 
@@ -306,25 +305,25 @@
 
           <div class="section-title">Kontak & Alamat</div>
           <div class="form-group">
-<!-- Input Alamat -->
-<label for="alamat">Alamat Lengkap:</label>
-<input type="text" id="alamat" placeholder="Masukkan alamat lengkap..." onchange="updateMap()">
+            <!-- Input Alamat -->
+            <label for="address">Alamat Lengkap:</label>
+            <input type="text" id="address" placeholder="Masukkan alamat lengkap..." oninput="updateMap()">
 
-<!-- Container Peta Google Maps -->
-<div style="margin-top: 10px;">
-    <iframe 
-        id="map-frame" 
-        width="100%" 
-        height="250" 
-        style="border:0; border-radius: 8px; display:none;" 
-        loading="lazy" 
-        allowfullscreen>
-    </iframe>
-</div>
+            <!-- Container Peta Google Maps -->
+            <div style="margin-top: 10px;">
+                <iframe 
+                    id="map-frame" 
+                    width="100%" 
+                    height="250" 
+                    style="border:0; border-radius: 8px; display:none;" 
+                    loading="lazy" 
+                    allowfullscreen>
+                </iframe>
+            </div>
           </div>
           <div class="form-group">
             <label>Kota</label>
-            <input type="text" id="city" placeholder="Kota/Kabupaten">
+            <input type="text" id="city" placeholder="Kota/Kabupaten" oninput="updateMap()">
           </div>
           <div class="form-group">
             <label>No. Handphone</label>
@@ -355,6 +354,23 @@
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     let allMembers = [];
     let currentMode = 'tambah';
+
+    function updateMap() {
+      const address = document.getElementById('address').value.trim();
+      const city = document.getElementById('city').value.trim();
+      const mapFrame = document.getElementById('map-frame');
+
+      const fullLocation = [address, city].filter(Boolean).join(', ');
+
+      if (fullLocation !== "") {
+        const encodedLocation = encodeURIComponent(fullLocation);
+        mapFrame.src = `https://maps.google.com/maps?q=${encodedLocation}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+        mapFrame.style.display = "block";
+      } else {
+        mapFrame.style.display = "none";
+        mapFrame.src = "";
+      }
+    }
 
     function updateSpouseLabel() {
       const gender = document.getElementById('gender').value;
@@ -464,7 +480,7 @@
 
         item.innerHTML = `
           <div class="data-card-title">${namePrefix}${m.full_name} (${m.nickname || '-'}) ${badgeHtml}</div>
-          <div class="data-card-sub">HP: ${m.phone || '-'} | Alamat: ${m.address || '-'}</div>
+          <div class="data-card-sub">HP: ${m.phone || '-'} | Alamat: ${m.address || '-'}, ${m.city || ''}</div>
         `;
 
         if (currentMode === 'edit') {
@@ -495,6 +511,7 @@
       document.getElementById('phone').value = m.phone || '';
 
       updateSpouseLabel();
+      updateMap(); // Memunculkan peta saat data di-edit
 
       document.getElementById('form-container').style.display = 'block';
       document.getElementById('search-edit-container').style.display = 'none';
@@ -509,6 +526,7 @@
       document.getElementById('form-title-text').innerText = '➕ Tambah Data Keluarga';
       document.getElementById('submitBtn').innerText = 'SIMPAN DATA';
       updateSpouseLabel();
+      updateMap(); // Menyembunyikan peta saat reset
       addChildRow();
     }
 
