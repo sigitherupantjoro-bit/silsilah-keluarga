@@ -306,8 +306,21 @@
 
           <div class="section-title">Kontak & Alamat</div>
           <div class="form-group">
-            <label>Alamat</label>
-            <input type="text" id="address" placeholder="Alamat tempat tinggal">
+<!-- Input Alamat -->
+<label for="alamat">Alamat Lengkap:</label>
+<input type="text" id="alamat" placeholder="Masukkan alamat lengkap..." onchange="updateMap()">
+
+<!-- Container Peta Google Maps -->
+<div style="margin-top: 10px;">
+    <iframe 
+        id="map-frame" 
+        width="100%" 
+        height="250" 
+        style="border:0; border-radius: 8px; display:none;" 
+        loading="lazy" 
+        allowfullscreen>
+    </iframe>
+</div>
           </div>
           <div class="form-group">
             <label>Kota</label>
