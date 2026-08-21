@@ -13,6 +13,11 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
+  <!-- Library tambahan untuk Pohon Silsilah Interaktif -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/orgchart/3.1.1/css/jquery.orgchart.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/orgchart/3.1.1/js/jquery.orgchart.min.js"></script>
+
   <style>
     :root {
       --primary: #0f766e;
@@ -274,6 +279,12 @@
     .tree-node-card:hover { background: var(--primary-light); }
     .tree-node-name { font-weight: 700; font-size: 12px; color: var(--primary-dark); }
     .tree-node-spouse { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+
+    /* Custom Overrides untuk OrgChart */
+    .orgchart { background: transparent !important; }
+    .orgchart .node { width: 130px !important; }
+    .orgchart .node .title { background-color: var(--primary) !important; font-size: 11px !important; height: auto !important; padding: 4px !important; }
+    .orgchart .node .content { border-color: var(--primary) !important; font-size: 10px !important; padding: 4px !important; }
   </style>
 </head>
 <body>
@@ -428,8 +439,7 @@
         <div class="nav-item active">🌳 Pohon Silsilah</div>
       </div>
       
-      <div class="form-title">🌳 Bagan Pohon Silsilah</div>
-      
+      <div class="form-title">🌳 Visualisasi Pohon Silsilah</div>
       <div class="form-group">
         <label>Pilih Kepala Silsilah (Puncak):</label>
         <select id="rootSelect" onchange="renderTree()">
@@ -438,7 +448,7 @@
       </div>
 
       <div class="tree-wrapper">
-        <div class="tree" id="treeContainer"></div>
+        <div id="treeContainer"></div>
       </div>
     </div>
 
@@ -786,43 +796,44 @@
       }
     }
 
-    function buildTreeHTML(memberId) {
+    function buildNodeData(memberId) {
       const member = allMembers.find(m => m.id === memberId);
-      if (!member) return '';
+      if (!member) return null;
 
-      const children = allMembers.filter(m => m.father_id === memberId || m.mother_id === memberId);
-      const spouseText = member.spouse_name ? ` & ${member.spouse_name}` : '';
-
-      let html = `<li>`;
-      html += `
-        <div class="tree-node-card" onclick="viewDetail('${member.id}')">
-          <div class="tree-node-name">${member.full_name}</div>
-          <div class="tree-node-spouse">${spouseText}</div>
-        </div>
-      `;
-
-      if (children.length > 0) {
-        html += `<ul>`;
-        children.forEach(child => {
-          html += buildTreeHTML(child.id);
-        });
-        html += `</ul>`;
+      let titleName = member.full_name;
+      if (member.is_alive === false) {
+        titleName = (member.gender === 'M' ? 'Alm. ' : 'Almh. ') + titleName;
       }
 
-      html += `</li>`;
-      return html;
+      let subInfo = member.spouse_name ? `❤️ ${member.spouse_name}` : (member.nickname || '');
+      let children = allMembers.filter(m => m.father_id === memberId || m.mother_id === memberId);
+
+      return {
+        'name': titleName,
+        'title': subInfo,
+        'children': children.map(c => buildNodeData(c.id)).filter(Boolean)
+      };
     }
 
     function renderTree() {
       const rootId = document.getElementById('rootSelect').value;
-      const container = document.getElementById('treeContainer');
+      const container = $('#treeContainer');
+      container.empty();
       
       if (!rootId) {
-        container.innerHTML = '<div style="text-align:center; font-size:12px; color:var(--text-muted);">Silakan pilih tetua terlebih dahulu.</div>';
+        container.html('<div style="text-align:center; font-size:12px; color:var(--text-muted);">Silakan pilih tetua terlebih dahulu.</div>');
         return;
       }
 
-      container.innerHTML = `<ul>${buildTreeHTML(rootId)}</ul>`;
+      const treeData = buildNodeData(rootId);
+      if (treeData) {
+        container.orgchart({
+          'data': treeData,
+          'nodeContent': 'title',
+          'verticalLevel': 3,
+          'visibleLevel': 4
+        });
+      }
     }
 
     document.getElementById('familyForm').addEventListener('submit', async (e) => {
