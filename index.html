@@ -142,11 +142,16 @@
       box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15);
     }
 
+    /* Kolom Nama Anak Diperlebar di sini */
     .child-row {
       display: grid;
-      grid-template-columns: 1fr 65px 110px 36px;
-      gap: 6px;
+      grid-template-columns: 2fr 60px 105px 32px;
+      gap: 4px;
       margin-bottom: 8px;
+    }
+    .child-row input, .child-row select {
+      padding: 8px 6px;
+      font-size: 12px;
     }
 
     .btn-add-child {
@@ -167,6 +172,7 @@
       border-radius: 8px;
       font-weight: bold;
       cursor: pointer;
+      padding: 0;
     }
 
     .btn-submit {
@@ -365,7 +371,6 @@
       const city = document.getElementById('city').value.trim();
       const mapFrame = document.getElementById('map-frame');
 
-      // Utamakan titik koordinat jika diisi, jika tidak gunakan alamat + kota
       let queryLocation = coordinates !== "" ? coordinates : [address, city].filter(Boolean).join(', ');
 
       if (queryLocation !== "") {
@@ -518,7 +523,7 @@
       document.getElementById('phone').value = m.phone || '';
 
       updateSpouseLabel();
-      updateMap(); // Load peta otomatis saat edit data
+      updateMap();
 
       document.getElementById('form-container').style.display = 'block';
       document.getElementById('search-edit-container').style.display = 'none';
