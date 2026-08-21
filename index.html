@@ -322,6 +322,10 @@
             </div>
           </div>
           <div class="form-group">
+            <label>Titik Koordinat (Latitude, Longitude):</label>
+            <input type="text" id="coordinates" placeholder="Contoh: -6.200000, 106.816666" oninput="updateMap()">
+          </div>
+          <div class="form-group">
             <label>Kota</label>
             <input type="text" id="city" placeholder="Kota/Kabupaten" oninput="updateMap()">
           </div>
@@ -357,13 +361,15 @@
 
     function updateMap() {
       const address = document.getElementById('address').value.trim();
+      const coordinates = document.getElementById('coordinates').value.trim();
       const city = document.getElementById('city').value.trim();
       const mapFrame = document.getElementById('map-frame');
 
-      const fullLocation = [address, city].filter(Boolean).join(', ');
+      // Utamakan titik koordinat jika diisi, jika tidak gunakan alamat + kota
+      let queryLocation = coordinates !== "" ? coordinates : [address, city].filter(Boolean).join(', ');
 
-      if (fullLocation !== "") {
-        const encodedLocation = encodeURIComponent(fullLocation);
+      if (queryLocation !== "") {
+        const encodedLocation = encodeURIComponent(queryLocation);
         mapFrame.src = `https://maps.google.com/maps?q=${encodedLocation}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
         mapFrame.style.display = "block";
       } else {
@@ -507,11 +513,12 @@
       document.getElementById('spouseName').value = m.spouse_name || '';
       document.getElementById('spouseBirthDate').value = m.spouse_birth_date || '';
       document.getElementById('address').value = m.address || '';
+      document.getElementById('coordinates').value = m.coordinates || '';
       document.getElementById('city').value = m.city || '';
       document.getElementById('phone').value = m.phone || '';
 
       updateSpouseLabel();
-      updateMap(); // Memunculkan peta saat data di-edit
+      updateMap(); // Load peta otomatis saat edit data
 
       document.getElementById('form-container').style.display = 'block';
       document.getElementById('search-edit-container').style.display = 'none';
@@ -522,11 +529,12 @@
     function resetForm() {
       document.getElementById('editId').value = '';
       document.getElementById('familyForm').reset();
+      document.getElementById('coordinates').value = '';
       document.getElementById('childrenContainer').innerHTML = '';
       document.getElementById('form-title-text').innerText = '➕ Tambah Data Keluarga';
       document.getElementById('submitBtn').innerText = 'SIMPAN DATA';
       updateSpouseLabel();
-      updateMap(); // Menyembunyikan peta saat reset
+      updateMap();
       addChildRow();
     }
 
@@ -546,6 +554,7 @@
         father_id: document.getElementById('fatherId').value || null,
         mother_id: document.getElementById('motherId').value || null,
         address: document.getElementById('address').value || null,
+        coordinates: document.getElementById('coordinates').value || null,
         phone: document.getElementById('phone').value || null
       };
 
