@@ -191,7 +191,6 @@
     }
     .btn-submit:hover { opacity: 0.95; transform: translateY(-1px); }
 
-    /* Data Card & Actions */
     .data-card {
       border: 1px solid var(--border);
       border-radius: 10px;
@@ -212,65 +211,69 @@
       font-weight: 700;
       margin-left: 6px;
     }
-    .card-actions {
-      display: flex;
-      gap: 8px;
-      margin-top: 10px;
-    }
+    .card-actions { display: flex; gap: 8px; margin-top: 10px; }
     .btn-card {
-      flex: 1;
-      padding: 6px 10px;
-      border-radius: 6px;
-      font-size: 12px;
-      font-weight: 700;
-      border: none;
-      cursor: pointer;
-      text-align: center;
+      flex: 1; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; border: none; cursor: pointer; text-align: center;
     }
     .btn-detail { background: var(--primary-light); color: var(--primary-dark); }
     .btn-edit-action { background: #e0f2fe; color: #0369a1; }
 
-    /* Modal Detail Styles */
+    /* Modal Styles */
     .modal-overlay {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(15, 23, 42, 0.6);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 16px;
-      z-index: 999;
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15, 23, 42, 0.6); display: flex; justify-content: center; align-items: center; padding: 16px; z-index: 999;
     }
     .modal-content {
-      background: #fff;
-      width: 100%;
-      max-width: 440px;
-      max-height: 85vh;
-      overflow-y: auto;
-      border-radius: 16px;
-      padding: 20px;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+      background: #fff; width: 100%; max-width: 440px; max-height: 85vh; overflow-y: auto; border-radius: 16px; padding: 20px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
     }
-    .detail-row {
-      display: flex;
-      justify-content: space-between;
-      border-bottom: 1px solid var(--border);
-      padding: 8px 0;
-      font-size: 13px;
-    }
+    .detail-row { display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding: 8px 0; font-size: 13px; }
     .detail-label { color: var(--text-muted); font-weight: 600; }
     .detail-val { font-weight: 700; color: var(--text); text-align: right; }
-    .btn-close-modal {
+    .btn-close-modal { width: 100%; background: #f1f5f9; color: var(--text); border: none; padding: 10px; border-radius: 8px; font-weight: 700; margin-top: 16px; cursor: pointer; }
+
+    /* STYLE POHON SILSILAH (TREE VIEW) */
+    .tree-wrapper {
       width: 100%;
-      background: #f1f5f9;
+      overflow-x: auto;
+      padding: 10px 0;
+    }
+    .tree ul {
+      padding-top: 20px; position: relative;
+      transition: all 0.5s; display: flex; justify-content: center;
+    }
+    .tree li {
+      float: left; text-align: center;
+      list-style-type: none; position: relative; padding: 20px 5px 0 5px;
+      transition: all 0.5s;
+    }
+    .tree li::before, .tree li::after{
+      content: ''; position: absolute; top: 0; right: 50%;
+      border-top: 2px solid #cbd5e1; width: 50%; height: 20px;
+    }
+    .tree li::after{ right: auto; left: 50%; border-left: 2px solid #cbd5e1; }
+    .tree li:only-child::after, .tree li:only-child::before { display: none; }
+    .tree li:only-child{ padding-top: 0;}
+    .tree li:first-child::before, .tree li:last-child::after{ border: 0 none; }
+    .tree li:last-child::before{ border-right: 2px solid #cbd5e1; border-radius: 0 8px 0 0; }
+    .tree li:first-child::after{ border-radius: 8px 0 0 0; }
+    .tree ul ul::before{
+      content: ''; position: absolute; top: 0; left: 50%;
+      border-left: 2px solid #cbd5e1; width: 0; height: 20px;
+    }
+    .tree-node-card {
+      border: 1px solid var(--primary);
+      background: #ffffff;
       color: var(--text);
-      border: none;
-      padding: 10px;
+      padding: 8px 12px;
       border-radius: 8px;
-      font-weight: 700;
-      margin-top: 16px;
+      display: inline-block;
+      min-width: 110px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
       cursor: pointer;
     }
+    .tree-node-card:hover { background: var(--primary-light); }
+    .tree-node-name { font-weight: 700; font-size: 12px; color: var(--primary-dark); }
+    .tree-node-spouse { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
   </style>
 </head>
 <body>
@@ -294,7 +297,7 @@
         <span>📋 Data Keluarga</span>
         <span>➔</span>
       </button>
-      <button class="btn-main" onclick="alert('Fitur Pohon Silsilah dapat dikembangkan sesuai kebutuhan!')">
+      <button class="btn-main" onclick="showPage('tree')">
         <span>🌳 Pohon Silsilah</span>
         <span>➔</span>
       </button>
@@ -387,14 +390,7 @@
             <input type="text" id="address" placeholder="Masukkan alamat lengkap..." oninput="updateMap()">
 
             <div style="margin-top: 10px;">
-                <iframe 
-                    id="map-frame" 
-                    width="100%" 
-                    height="250" 
-                    style="border:0; border-radius: 8px; display:none;" 
-                    loading="lazy" 
-                    allowfullscreen>
-                </iframe>
+                <iframe id="map-frame" width="100%" height="250" style="border:0; border-radius: 8px; display:none;" loading="lazy" allowfullscreen></iframe>
             </div>
           </div>
           <div class="form-group">
@@ -425,6 +421,27 @@
 
     </div>
 
+    <!-- PAGE 3: POHON SILSILAH -->
+    <div id="page-tree" style="display: none;">
+      <div class="nav-tabs">
+        <div class="nav-item" onclick="showPage('main')">🏠 Utama</div>
+        <div class="nav-item active">🌳 Pohon Silsilah</div>
+      </div>
+      
+      <div class="form-title">🌳 Bagan Pohon Silsilah</div>
+      
+      <div class="form-group">
+        <label>Pilih Kepala Silsilah (Puncak):</label>
+        <select id="rootSelect" onchange="renderTree()">
+          <option value="">-- Pilih Anggota Tetua --</option>
+        </select>
+      </div>
+
+      <div class="tree-wrapper">
+        <div class="tree" id="treeContainer"></div>
+      </div>
+    </div>
+
   </div>
 
   <!-- MODAL POPUP DETAIL LENGKAP -->
@@ -444,16 +461,12 @@
     let allMembers = [];
     let currentMode = 'tambah';
 
-    const MONTH_NAMES = [
-      "Januari", "Februari", "Maret", "April", "Mei", "Juni", 
-      "Juli", "Agustus", "September", "Oktober", "November", "Desember"
-    ];
+    const MONTH_NAMES = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
 
     function populateDateDropdowns(dayId, monthId, yearId) {
       const daySel = document.getElementById(dayId);
       const monthSel = document.getElementById(monthId);
       const yearSel = document.getElementById(yearId);
-
       if (!daySel || !monthSel || !yearSel) return;
 
       daySel.innerHTML = '<option value="">Tgl</option>';
@@ -519,8 +532,7 @@
       let queryLocation = coordinates !== "" ? coordinates : [address, city].filter(Boolean).join(', ');
 
       if (queryLocation !== "") {
-        const encodedLocation = encodeURIComponent(queryLocation);
-        mapFrame.src = `https://maps.google.com/maps?q=${encodedLocation}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+        mapFrame.src = `https://maps.google.com/maps?q=${encodeURIComponent(queryLocation)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
         mapFrame.style.display = "block";
       } else {
         mapFrame.style.display = "none";
@@ -547,9 +559,13 @@
     function showPage(page) {
       document.getElementById('page-main').style.display = page === 'main' ? 'block' : 'none';
       document.getElementById('page-form').style.display = page === 'form' ? 'block' : 'none';
+      document.getElementById('page-tree').style.display = page === 'tree' ? 'block' : 'none';
+      
       if (page === 'form') {
         loadData();
         setMode('tambah');
+      } else if (page === 'tree') {
+        loadData().then(() => populateRootSelect());
       }
     }
 
@@ -753,6 +769,60 @@
       updateSpouseLabel();
       updateMap();
       addChildRow();
+    }
+
+    /* POHON SILSILAH LOGIC */
+    function populateRootSelect() {
+      const rootSel = document.getElementById('rootSelect');
+      rootSel.innerHTML = '<option value="">-- Pilih Tetua / Kepala Keluarga --</option>';
+      allMembers.forEach(m => {
+        rootSel.innerHTML += `<option value="${m.id}">${m.full_name}</option>`;
+      });
+      
+      // Auto-select anggota teratas/pertama jika ada
+      if (allMembers.length > 0) {
+        rootSel.value = allMembers[0].id;
+        renderTree();
+      }
+    }
+
+    function buildTreeHTML(memberId) {
+      const member = allMembers.find(m => m.id === memberId);
+      if (!member) return '';
+
+      const children = allMembers.filter(m => m.father_id === memberId || m.mother_id === memberId);
+      const spouseText = member.spouse_name ? ` & ${member.spouse_name}` : '';
+
+      let html = `<li>`;
+      html += `
+        <div class="tree-node-card" onclick="viewDetail('${member.id}')">
+          <div class="tree-node-name">${member.full_name}</div>
+          <div class="tree-node-spouse">${spouseText}</div>
+        </div>
+      `;
+
+      if (children.length > 0) {
+        html += `<ul>`;
+        children.forEach(child => {
+          html += buildTreeHTML(child.id);
+        });
+        html += `</ul>`;
+      }
+
+      html += `</li>`;
+      return html;
+    }
+
+    function renderTree() {
+      const rootId = document.getElementById('rootSelect').value;
+      const container = document.getElementById('treeContainer');
+      
+      if (!rootId) {
+        container.innerHTML = '<div style="text-align:center; font-size:12px; color:var(--text-muted);">Silakan pilih tetua terlebih dahulu.</div>';
+        return;
+      }
+
+      container.innerHTML = `<ul>${buildTreeHTML(rootId)}</ul>`;
     }
 
     document.getElementById('familyForm').addEventListener('submit', async (e) => {
