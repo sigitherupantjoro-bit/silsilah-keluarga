@@ -147,7 +147,7 @@
 
     .child-row-top {
       display: grid;
-      grid-template-columns: 1fr 50px 32px;
+      grid-template-columns: 1fr 50px 95px 32px;
       gap: 6px;
       margin-bottom: 4px;
     }
@@ -381,6 +381,13 @@
             <label id="spouseLabel">Nama Pasangan <span id="spouseHint" style="color: var(--primary); font-weight: 700;">(Istri - Perempuan)</span></label>
             <input type="text" id="spouseName" placeholder="Nama istri">
           </div>
+          <div class="form-group">
+            <label>Status Pasangan</label>
+            <select id="spouseIsAlive">
+              <option value="true">Hidup</option>
+              <option value="false">Meninggal Dunia</option>
+            </select>
+          </div>
           
           <div class="form-group">
             <label id="spouseBirthLabel">Tgl Lahir Pasangan</label>
@@ -601,7 +608,7 @@
     }
 
     let childCounter = 0;
-    function addChildRow(name = '', gender = 'M', dob = '') {
+    function addChildRow(name = '', gender = 'M', dob = '', isAlive = 'true') {
       childCounter++;
       const container = document.getElementById('childrenContainer');
       const card = document.createElement('div');
@@ -617,6 +624,10 @@
           <select class="child-gender">
             <option value="M" ${gender === 'M' ? 'selected' : ''}>L</option>
             <option value="F" ${gender === 'F' ? 'selected' : ''}>P</option>
+          </select>
+          <select class="child-is-alive">
+            <option value="true" ${isAlive === 'true' || isAlive === true ? 'selected' : ''}>Hidup</option>
+            <option value="false" ${isAlive === 'false' || isAlive === false ? 'selected' : ''}>Meninggal</option>
           </select>
           <button type="button" class="btn-remove" onclick="this.closest('.child-container-item').remove()">✕</button>
         </div>
@@ -718,6 +729,7 @@
         <div class="detail-row"><span class="detail-label">Ayah</span><span class="detail-val">${father ? father.full_name : '-'}</span></div>
         <div class="detail-row"><span class="detail-label">Ibu</span><span class="detail-val">${mother ? mother.full_name : '-'}</span></div>
         <div class="detail-row"><span class="detail-label">Pasangan</span><span class="detail-val">${m.spouse_name || '-'}</span></div>
+        <div class="detail-row"><span class="detail-label">Status Pasangan</span><span class="detail-val">${m.spouse_is_alive !== false ? 'Hidup' : 'Meninggal Dunia'}</span></div>
         <div class="detail-row"><span class="detail-label">Tgl Lahir Pasangan</span><span class="detail-val">${formatDateIndo(m.spouse_birth_date)}</span></div>
         <div class="detail-row"><span class="detail-label">No. HP</span><span class="detail-val">${m.phone || '-'}</span></div>
         <div class="detail-row"><span class="detail-label">Alamat</span><span class="detail-val">${m.address || '-'}</span></div>
@@ -751,6 +763,7 @@
       document.getElementById('fatherId').value = m.father_id || '';
       document.getElementById('motherId').value = m.mother_id || '';
       document.getElementById('spouseName').value = m.spouse_name || '';
+      document.getElementById('spouseIsAlive').value = m.spouse_is_alive !== false ? 'true' : 'false';
       document.getElementById('address').value = m.address || '';
       document.getElementById('coordinates').value = m.coordinates || '';
       document.getElementById('city').value = m.city || '';
@@ -773,6 +786,7 @@
       setDateToDropdowns('dob_day_spouse', 'dob_month_spouse', 'dob_year_spouse', '');
 
       document.getElementById('coordinates').value = '';
+      document.getElementById('spouseIsAlive').value = 'true';
       document.getElementById('childrenContainer').innerHTML = '';
       document.getElementById('form-title-text').innerText = '➕ Tambah Data Keluarga';
       document.getElementById('submitBtn').innerText = 'SIMPAN DATA';
@@ -862,17 +876,60 @@
       const spouseName = document.getElementById('spouseName').value;
       const city = document.getElementById('city').value;
 
-      if (spouseName) payload.spouse_name = spouseName;
+      if (spouseName) {
+        payload.spouse_name = spouseName;
+        payload.spouse_is_alive = document.getElementById('spouseIsAlive').value === 'true';
+      }
       if (spouseBirthDate) payload.spouse_birth_date = spouseBirthDate;
       if (city) payload.city = city;
 
       let error;
+      let insertedMemberId = editId;
+
       if (editId) {
         const res = await supabaseClient.from('members').update(payload).eq('id', editId);
         error = res.error;
       } else {
-        const res = await supabaseClient.from('members').insert([payload]);
+        const res = await supabaseClient.from('members').insert([payload]).select();
         error = res.error;
+        if (res.data && res.data.length > 0) {
+          insertedMemberId = res.data[0].id;
+        }
+      }
+
+      if (!error && insertedMemberId) {
+        const childItems = document.querySelectorAll('.child-container-item');
+        const childrenPayloads = [];
+
+        childItems.forEach((item, index) => {
+          const childName = item.querySelector('.child-name').value.trim();
+          if (childName) {
+            const childGender = item.querySelector('.child-gender').value;
+            const childIsAlive = item.querySelector('.child-is-alive').value === 'true';
+            
+            const daySel = item.querySelector('.child-day').value;
+            const monthSel = item.querySelector('.child-month').value;
+            const yearSel = item.querySelector('.child-year').value;
+            let childDob = null;
+            if (daySel && monthSel && yearSel) {
+              childDob = `${yearSel}-${monthSel}-${daySel}`;
+            }
+
+            const currentGender = document.getElementById('gender').value;
+            childrenPayloads.push({
+              full_name: childName,
+              gender: childGender,
+              is_alive: childIsAlive,
+              birth_date: childDob,
+              father_id: currentGender === 'M' ? insertedMemberId : null,
+              mother_id: currentGender === 'F' ? insertedMemberId : null
+            });
+          }
+        });
+
+        if (childrenPayloads.length > 0) {
+          await supabaseClient.from('members').insert(childrenPayloads);
+        }
       }
 
       btn.disabled = false;
