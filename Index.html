@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Keluarga Besar Nyai Mah</title>
+  <link rel="icon" type="image/jpeg" href="nyai.jpg">
+  <link rel="apple-touch-icon" href="nyai.jpg">
+  <link rel="manifest" href="manifest.json">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#0f766e">	
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Library tambahan untuk Pohon Silsilah Interaktif -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/orgchart/3.1.1/css/jquery.orgchart.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/orgchart/3.1.1/js/jquery.orgchart.min.js"></script>
+
+  <style>
+    :root {
+      --primary: #0f766e;
+      --primary-dark: #115e59;
+      --primary-light: #ccfbf1;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --radius: 16px;
+      --shadow: 0 20px 25px -5px rgba(15, 118, 110, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+    }
+
+    * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; transition: all 0.2s ease; }
+    body { background: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%); margin: 0; padding: 24px 12px; min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; }
+    
+    .card-container {
+      background: var(--surface);
+      width: 100%;
+      max-width: 480px;
+      border-radius: var(--radius);
+      padding: 28px;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+    }
+
+    .header-profile {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: linear-gradient(135deg, #0f766e, #047857);
+      padding: 18px;
+      border-radius: 14px;
+      color: white;
+      margin-bottom: 20px;
+      box-shadow: 0 10px 15px -3px rgba(15, 118, 110, 0.3);
+    }
+    .profile-img {
+      width: 68px;
+      height: 68px;
+      border-radius: 12px;
+      object-fit: cover;
+      border: 2px solid #ffffff;
+    }
+    .profile-title { font-size: 18px; font-weight: 800; line-height: 1.25; letter-spacing: -0.02em; }
+    .profile-subtitle { font-size: 12px; opacity: 0.85; margin-top: 4px; }
+
+    .btn-main {
+      width: 100%;
+      background: var(--surface);
+      color: var(--primary);
+      border: 2px solid var(--primary-light);
+      padding: 16px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .btn-main:hover {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+
+    .nav-tabs {
+      display: flex;
+      background: #f1f5f9;
+      padding: 4px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      gap: 4px;
+    }
+    .nav-item {
+      flex: 1;
+      text-align: center;
+      padding: 8px 4px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: 8px;
+    }
+    .nav-item.active {
+      background: var(--surface);
+      color: var(--primary);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .form-title { font-size: 16px; color: var(--primary-dark); font-weight: 800; margin-bottom: 16px; }
+    .section-title {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--primary);
+      font-weight: 800;
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+    .form-group { margin-bottom: 12px; }
+    label { display: block; font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+    input, select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+      background-color: #f8fafc;
+      outline: none;
+    }
+    input:focus, select:focus {
+      border-color: var(--primary);
+      background-color: #fff;
+      box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15);
+    }
+
+    .date-select-group {
+      display: grid;
+      grid-template-columns: 75px 1fr 90px;
+      gap: 6px;
+    }
+
+    .child-row-top {
+      display: grid;
+      grid-template-columns: 1fr 50px 95px 32px;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+    .child-container-item {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      padding: 8px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+
+    .btn-add-child {
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      border: none;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
+    }
+    .btn-remove {
+      background: #fee2e2;
+      color: #dc2626;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      padding: 0;
+      height: 38px;
+    }
+
+    .btn-submit {
+      width: 100%;
+      background: linear-gradient(135deg, #0f766e, #047857);
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      margin-top: 24px;
+      box-shadow: 0 4px 12px rgba(15, 118, 110, 0.25);
+    }
+    .btn-submit:hover { opacity: 0.95; transform: translateY(-1px); }
+
+    .data-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 10px;
+      background: #ffffff;
+    }
+    .data-card:hover { border-color: var(--primary); }
+    .data-card-title { font-weight: 700; color: var(--text); font-size: 14px; }
+    .data-card-sub { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+    .badge-deceased {
+      display: inline-block;
+      font-size: 10px;
+      background: #fecdd3;
+      color: #9f1239;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 700;
+      margin-left: 6px;
+    }
+    .card-actions { display: flex; gap: 8px; margin-top: 10px; }
+    .btn-card {
+      flex: 1; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; border: none; cursor: pointer; text-align: center;
+    }
+    .btn-detail { background: var(--primary-light); color: var(--primary-dark); }
+    .btn-edit-action { background: #e0f2fe; color: #0369a1; }
+
+    /* Modal Styles */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15, 23, 42, 0.6); display: flex; justify-content: center; align-items: center; padding: 16px; z-index: 999;
+    }
+    .modal-content {
+      background: #fff; width: 100%; max-width: 440px; max-height: 85vh; overflow-y: auto; border-radius: 16px; padding: 20px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+    }
+    .detail-row { display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding: 8px 0; font-size: 13px; }
+    .detail-label { color: var(--text-muted); font-weight: 600; }
+    .detail-val { font-weight: 700; color: var(--text); text-align: right; }
+    .btn-close-modal { width: 100%; background: #f1f5f9; color: var(--text); border: none; padding: 10px; border-radius: 8px; font-weight: 700; margin-top: 16px; cursor: pointer; }
+
+    /* STYLE POHON SILSILAH (TREE VIEW) */
+    .tree-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      padding: 10px 0;
+    }
+    .tree ul {
+      padding-top: 20px; position: relative;
+      transition: all 0.5s; display: flex; justify-content: center;
+    }
+    .tree li {
+      float: left; text-align: center;
+      list-style-type: none; position: relative; padding: 20px 5px 0 5px;
+      transition: all 0.5s;
+    }
+    .tree li::before, .tree li::after{
+      content: ''; position: absolute; top: 0; right: 50%;
+      border-top: 2px solid #cbd5e1; width: 50%; height: 20px;
+    }
+    .tree li::after{ right: auto; left: 50%; border-left: 2px solid #cbd5e1; }
+    .tree li:only-child::after, .tree li:only-child::before { display: none; }
+    .tree li:only-child{ padding-top: 0;}
+    .tree li:first-child::before, .tree li:last-child::after{ border: 0 none; }
+    .tree li:last-child::before{ border-right: 2px solid #cbd5e1; border-radius: 0 8px 0 0; }
+    .tree li:first-child::after{ border-radius: 8px 0 0 0; }
+    .tree ul ul::before{
+      content: ''; position: absolute; top: 0; left: 50%;
+      border-left: 2px solid #cbd5e1; width: 0; height: 20px;
+    }
+    .tree-node-card {
+      border: 1px solid var(--primary);
+      background: #ffffff;
+      color: var(--text);
+      padding: 8px 12px;
+      border-radius: 8px;
+      display: inline-block;
+      min-width: 110px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      cursor: pointer;
+    }
+    .tree-node-card:hover { background: var(--primary-light); }
+    .tree-node-name { font-weight: 700; font-size: 12px; color: var(--primary-dark); }
+    .tree-node-spouse { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+
+    /* Custom Overrides untuk OrgChart */
+    .orgchart { background: transparent !important; }
+    .orgchart .node { width: 130px !important; }
+    .orgchart .node .title { background-color: var(--primary) !important; font-size: 11px !important; height: auto !important; padding: 4px !important; }
+    .orgchart .node .content { border-color: var(--primary) !important; font-size: 10px !important; padding: 4px !important; }
+  </style>
+</head>
+<body>
+
+  <div class="card-container">
+
+    <!-- HEADER UTAMA -->
+    <div class="header-profile">
+      <div>
+        <img src="nyai.jpg" alt="Nyai Mah" class="profile-img">
+      </div>
+      <div>
+        <div class="profile-title">Keluarga Besar<br>Nyai Mah</div>
+        <div class="profile-subtitle">Sistem Silsilah Keluarga</div>
+      </div>
+    </div>
+
+    <!-- PAGE 1: MENU UTAMA -->
+    <div id="page-main">
+      <button class="btn-main" onclick="showPage('form')">
+        <span>📋 Data Keluarga</span>
+        <span>➔</span>
+      </button>
+      <button class="btn-main" onclick="showPage('tree')">
+        <span>🌳 Pohon Silsilah</span>
+        <span>➔</span>
+      </button>
+    </div>
+
+    <!-- PAGE 2: SUB-MENU (FORM / CARI / EDIT) -->
+    <div id="page-form" style="display: none;">
+      
+      <!-- NAVIGASI TAB -->
+      <div class="nav-tabs">
+        <div class="nav-item" onclick="showPage('main')">🏠 Utama</div>
+        <div class="nav-item active" id="tab-tambah" onclick="setMode('tambah')">➕ Tambah</div>
+        <div class="nav-item" id="tab-cari" onclick="setMode('cari')">🔍 Cari</div>
+        <div class="nav-item" id="tab-edit" onclick="setMode('edit')">✏️ Edit</div>
+      </div>
+
+      <!-- KONTEN FORM -->
+      <div id="form-container">
+        <div class="form-title" id="form-title-text">➕ Tambah Data Keluarga</div>
+
+        <form id="familyForm">
+          <input type="hidden" id="editId">
+
+          <div class="section-title">Data Pribadi</div>
+          <div class="form-group">
+            <label>Nama Lengkap*</label>
+            <input type="text" id="fullName" placeholder="Masukkan nama lengkap" required>
+          </div>
+          <div class="form-group">
+            <label>Nama Panggilan</label>
+            <input type="text" id="nickname" placeholder="Nama panggilan">
+          </div>
+          
+          <div class="form-group">
+            <label>Tanggal Lahir</label>
+            <div class="date-select-group">
+              <select id="dob_day_main"><option value="">Tgl</option></select>
+              <select id="dob_month_main"><option value="">Bulan</option></select>
+              <select id="dob_year_main"><option value="">Tahun</option></select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Jenis Kelamin*</label>
+            <select id="gender">
+              <option value="M">Laki-laki</option>
+              <option value="F">Perempuan</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Status Anggota*</label>
+            <select id="isAlive">
+              <option value="true">Hidup</option>
+              <option value="false">Meninggal Dunia</option>
+            </select>
+          </div>
+
+          <div class="section-title">Keluarga Inti (Orang Tua)</div>
+          <div class="form-group">
+            <label>Nama Ayah</label>
+            <select id="fatherId"><option value="">-- Pilih Ayah --</option></select>
+          </div>
+          <div class="form-group">
+            <label>Nama Ibu</label>
+            <select id="motherId"><option value="">-- Pilih Ibu --</option></select>
+          </div>
+
+          <div class="section-title">Pasangan</div>
+          <div class="form-group">
+            <label id="spouseLabel">Nama Pasangan <span id="spouseHint" style="color: var(--primary); font-weight: 700;">(Istri - Perempuan)</span></label>
+            <input type="text" id="spouseName" placeholder="Nama istri">
+          </div>
+          <div class="form-group">
+            <label>Status Pasangan</label>
+            <select id="spouseIsAlive">
+              <option value="true">Hidup</option>
+              <option value="false">Meninggal Dunia</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label id="spouseBirthLabel">Tgl Lahir Pasangan</label>
+            <div class="date-select-group">
+              <select id="dob_day_spouse"><option value="">Tgl</option></select>
+              <select id="dob_month_spouse"><option value="">Bulan</option></select>
+              <select id="dob_year_spouse"><option value="">Tahun</option></select>
+            </div>
+          </div>
+
+          <div class="section-title">Anak-Anak</div>
+          <div id="childrenContainer"></div>
+          <button type="button" class="btn-add-child" onclick="addChildRow()">+ Tambah Baris Anak</button>
+
+          <div class="section-title">Kontak & Alamat</div>
+          <div class="form-group">
+            <label for="address">Alamat Lengkap:</label>
+            <input type="text" id="address" placeholder="Masukkan alamat lengkap..." oninput="updateMap()">
+
+            <div style="margin-top: 10px;">
+                <iframe id="map-frame" width="100%" height="250" style="border:0; border-radius: 8px; display:none;" loading="lazy" allowfullscreen></iframe>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Titik Koordinat (Latitude, Longitude):</label>
+            <input type="text" id="coordinates" placeholder="Contoh: -6.200000, 106.816666" oninput="updateMap()">
+          </div>
+          <div class="form-group">
+            <label>Kota</label>
+            <input type="text" id="city" placeholder="Kota/Kabupaten" oninput="updateMap()">
+          </div>
+          <div class="form-group">
+            <label>No. Handphone</label>
+            <input type="text" id="phone" placeholder="08xxxxxxxxxx">
+          </div>
+
+          <button type="submit" class="btn-submit" id="submitBtn">SIMPAN DATA</button>
+        </form>
+      </div>
+
+      <!-- KONTEN CARI / EDIT LIST -->
+      <div id="search-edit-container" style="display: none;">
+        <div class="form-title" id="list-title">🔍 Cari Data Keluarga</div>
+        <div class="form-group">
+          <input type="text" id="searchInput" placeholder="Cari nama anggota..." onkeyup="filterList()">
+        </div>
+        <div id="dataList"></div>
+      </div>
+
+    </div>
+
+    <!-- PAGE 3: POHON SILSILAH -->
+    <div id="page-tree" style="display: none;">
+      <div class="nav-tabs">
+        <div class="nav-item" onclick="showPage('main')">🏠 Utama</div>
+        <div class="nav-item active">🌳 Pohon Silsilah</div>
+      </div>
+      
+      <div class="form-title">🌳 Visualisasi Pohon Silsilah</div>
+      <div class="form-group">
+        <label>Pilih Kepala Silsilah (Puncak):</label>
+        <select id="rootSelect" onchange="renderTree()">
+          <option value="">-- Pilih Anggota Tetua --</option>
+        </select>
+      </div>
+
+      <div class="tree-wrapper">
+        <div id="treeContainer"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MODAL POPUP DETAIL LENGKAP -->
+  <div id="detailModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <div class="form-title" style="margin-bottom: 10px;">📄 Detail Anggota Keluarga</div>
+      <div id="modalBody"></div>
+      <button class="btn-close-modal" onclick="closeDetailModal()">Tutup</button>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://dvukfisljpafjlgcqedy.supabase.co'; 
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR2dWtmaXNsanBhZmpsZ2NxZWR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxMzA3MDQsImV4cCI6MjEwMjcwNjcwNH0.P8VSAVIYTuGkk3cWVvBLEFV1jBMLskLsgceulPijs14'; 
+
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    let allMembers = [];
+    let currentMode = 'tambah';
+
+    const MONTH_NAMES = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+
+    function populateDateDropdowns(dayId, monthId, yearId) {
+      const daySel = document.getElementById(dayId);
+      const monthSel = document.getElementById(monthId);
+      const yearSel = document.getElementById(yearId);
+      if (!daySel || !monthSel || !yearSel) return;
+
+      daySel.innerHTML = '<option value="">Tgl</option>';
+      for (let i = 1; i <= 31; i++) {
+        const val = String(i).padStart(2, '0');
+        daySel.innerHTML += `<option value="${val}">${i}</option>`;
+      }
+
+      monthSel.innerHTML = '<option value="">Bulan</option>';
+      MONTH_NAMES.forEach((m, idx) => {
+        const val = String(idx + 1).padStart(2, '0');
+        monthSel.innerHTML += `<option value="${val}">${m}</option>`;
+      });
+
+      yearSel.innerHTML = '<option value="">Tahun</option>';
+      const currentYear = new Date().getFullYear();
+      for (let y = currentYear; y >= 1900; y--) {
+        yearSel.innerHTML += `<option value="${y}">${y}</option>`;
+      }
+    }
+
+    function getDateFromDropdowns(dayId, monthId, yearId) {
+      const d = document.getElementById(dayId).value;
+      const m = document.getElementById(monthId).value;
+      const y = document.getElementById(yearId).value;
+      if (d && m && y) return `${y}-${m}-${d}`;
+      return null;
+    }
+
+    function setDateToDropdowns(dayId, monthId, yearId, dateStr) {
+      if (!dateStr) {
+        document.getElementById(dayId).value = '';
+        document.getElementById(monthId).value = '';
+        document.getElementById(yearId).value = '';
+        return;
+      }
+      const parts = dateStr.split('-');
+      if (parts.length === 3) {
+        document.getElementById(yearId).value = parts[0];
+        document.getElementById(monthId).value = parts[1];
+        document.getElementById(dayId).value = parts[2];
+      }
+    }
+
+    function formatDateIndo(dateStr) {
+      if (!dateStr) return '-';
+      const parts = dateStr.split('-');
+      if (parts.length === 3) {
+        const d = parseInt(parts[2], 10);
+        const m = MONTH_NAMES[parseInt(parts[1], 10) - 1];
+        const y = parts[0];
+        return `${d} ${m} ${y}`;
+      }
+      return dateStr;
+    }
+
+    function updateMap() {
+      const address = document.getElementById('address').value.trim();
+      const coordinates = document.getElementById('coordinates').value.trim();
+      const city = document.getElementById('city').value.trim();
+      const mapFrame = document.getElementById('map-frame');
+
+      let queryLocation = coordinates !== "" ? coordinates : [address, city].filter(Boolean).join(', ');
+
+      if (queryLocation !== "") {
+        mapFrame.src = `https://maps.google.com/maps?q=${encodeURIComponent(queryLocation)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+        mapFrame.style.display = "block";
+      } else {
+        mapFrame.style.display = "none";
+        mapFrame.src = "";
+      }
+    }
+
+    function updateSpouseLabel() {
+      const gender = document.getElementById('gender').value;
+      const spouseHint = document.getElementById('spouseHint');
+      const spouseInput = document.getElementById('spouseName');
+
+      if (gender === 'M') {
+        spouseHint.innerText = '(Istri - Perempuan)';
+        spouseInput.placeholder = 'Nama istri';
+      } else {
+        spouseHint.innerText = '(Suami - Laki-laki)';
+        spouseInput.placeholder = 'Nama suami';
+      }
+    }
+
+    document.getElementById('gender').addEventListener('change', updateSpouseLabel);
+
+    function showPage(page) {
+      document.getElementById('page-main').style.display = page === 'main' ? 'block' : 'none';
+      document.getElementById('page-form').style.display = page === 'form' ? 'block' : 'none';
+      document.getElementById('page-tree').style.display = page === 'tree' ? 'block' : 'none';
+      
+      if (page === 'form') {
+        loadData();
+        setMode('tambah');
+      } else if (page === 'tree') {
+        loadData().then(() => populateRootSelect());
+      }
+    }
+
+    function setMode(mode) {
+      currentMode = mode;
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      
+      const formContainer = document.getElementById('form-container');
+      const searchContainer = document.getElementById('search-edit-container');
+
+      if (mode === 'tambah') {
+        document.getElementById('tab-tambah').classList.add('active');
+        formContainer.style.display = 'block';
+        searchContainer.style.display = 'none';
+        resetForm();
+      } else if (mode === 'cari' || mode === 'edit') {
+        document.getElementById(mode === 'cari' ? 'tab-cari' : 'tab-edit').classList.add('active');
+        formContainer.style.display = 'none';
+        searchContainer.style.display = 'block';
+        document.getElementById('list-title').innerText = mode === 'cari' ? '🔍 Cari Data Keluarga' : '✏️ Pilih Data Untuk Di-edit';
+        renderList();
+      }
+    }
+
+    let childCounter = 0;
+    function addChildRow(name = '', gender = 'M', dob = '', isAlive = 'true') {
+      childCounter++;
+      const container = document.getElementById('childrenContainer');
+      const card = document.createElement('div');
+      card.className = 'child-container-item';
+      
+      const dayId = `dob_day_child_${childCounter}`;
+      const monthId = `dob_month_child_${childCounter}`;
+      const yearId = `dob_year_child_${childCounter}`;
+
+      card.innerHTML = `
+        <div class="child-row-top">
+          <input type="text" placeholder="Nama anak" value="${name}" class="child-name">
+          <select class="child-gender">
+            <option value="M" ${gender === 'M' ? 'selected' : ''}>L</option>
+            <option value="F" ${gender === 'F' ? 'selected' : ''}>P</option>
+          </select>
+          <select class="child-is-alive">
+            <option value="true" ${isAlive === 'true' || isAlive === true ? 'selected' : ''}>Hidup</option>
+            <option value="false" ${isAlive === 'false' || isAlive === false ? 'selected' : ''}>Meninggal</option>
+          </select>
+          <button type="button" class="btn-remove" onclick="this.closest('.child-container-item').remove()">✕</button>
+        </div>
+        <div class="date-select-group">
+          <select id="${dayId}" class="child-day"><option value="">Tgl</option></select>
+          <select id="${monthId}" class="child-month"><option value="">Bulan</option></select>
+          <select id="${yearId}" class="child-year"><option value="">Tahun</option></select>
+        </div>
+      `;
+      container.appendChild(card);
+      populateDateDropdowns(dayId, monthId, yearId);
+      if (dob) setDateToDropdowns(dayId, monthId, yearId, dob);
+    }
+
+    async function loadData() {
+      const { data, error } = await supabaseClient.from('members').select('*').order('full_name', { ascending: true });
+      if (!error && data) {
+        allMembers = data;
+        populateParents();
+      }
+    }
+
+    function populateParents() {
+      const fatherSel = document.getElementById('fatherId');
+      const motherSel = document.getElementById('motherId');
+      fatherSel.innerHTML = '<option value="">-- Pilih Ayah --</option>';
+      motherSel.innerHTML = '<option value="">-- Pilih Ibu --</option>';
+
+      allMembers.forEach(m => {
+        const prefix = m.is_alive === false ? (m.gender === 'M' ? 'Alm. ' : 'Almh. ') : '';
+        if (m.gender === 'M') fatherSel.innerHTML += `<option value="${m.id}">${prefix}${m.full_name}</option>`;
+        if (m.gender === 'F') motherSel.innerHTML += `<option value="${m.id}">${prefix}${m.full_name}</option>`;
+      });
+    }
+
+    function renderList(filter = '') {
+      const listEl = document.getElementById('dataList');
+      listEl.innerHTML = '';
+
+      const filtered = allMembers.filter(m => m.full_name.toLowerCase().includes(filter.toLowerCase()));
+
+      if (filtered.length === 0) {
+        listEl.innerHTML = '<div style="font-size:12px; color:#64748b; text-align:center; padding:20px;">Data tidak ditemukan.</div>';
+        return;
+      }
+
+      filtered.forEach(m => {
+        const item = document.createElement('div');
+        item.className = 'data-card';
+        
+        let namePrefix = '';
+        let badgeHtml = '';
+        if (m.is_alive === false) {
+          namePrefix = m.gender === 'M' ? 'Alm. ' : 'Almh. ';
+          badgeHtml = `<span class="badge-deceased">${m.gender === 'M' ? 'Almarhum' : 'Almarhumah'}</span>`;
+        }
+
+        item.innerHTML = `
+          <div class="data-card-title">${namePrefix}${m.full_name} (${m.nickname || '-'}) ${badgeHtml}</div>
+          <div class="data-card-sub">HP: ${m.phone || '-'} | Alamat: ${m.address || '-'}, ${m.city || ''}</div>
+          <div class="card-actions">
+            <button class="btn-card btn-detail" onclick="viewDetail('${m.id}')">👁️ Detail</button>
+            ${currentMode === 'edit' ? `<button class="btn-card btn-edit-action" onclick="selectForEditById('${m.id}')">✏️ Edit</button>` : ''}
+          </div>
+        `;
+
+        listEl.appendChild(item);
+      });
+    }
+
+    function filterList() {
+      renderList(document.getElementById('searchInput').value);
+    }
+
+    function viewDetail(memberId) {
+      const m = allMembers.find(item => item.id === memberId);
+      if (!m) return;
+
+      const father = allMembers.find(item => item.id === m.father_id);
+      const mother = allMembers.find(item => item.id === m.mother_id);
+
+      let mapEmbedHtml = '';
+      let queryLoc = m.coordinates || [m.address, m.city].filter(Boolean).join(', ');
+      if (queryLoc) {
+        mapEmbedHtml = `
+          <div style="margin-top: 10px;">
+            <iframe width="100%" height="180" style="border:0; border-radius:8px;" loading="lazy" src="https://maps.google.com/maps?q=${encodeURIComponent(queryLoc)}&t=&z=15&ie=UTF8&iwloc=&output=embed"></iframe>
+          </div>
+        `;
+      }
+
+      const modalBody = document.getElementById('modalBody');
+      modalBody.innerHTML = `
+        <div class="detail-row"><span class="detail-label">Nama Lengkap</span><span class="detail-val">${m.full_name}</span></div>
+        <div class="detail-row"><span class="detail-label">Nama Panggilan</span><span class="detail-val">${m.nickname || '-'}</span></div>
+        <div class="detail-row"><span class="detail-label">Status</span><span class="detail-val">${m.is_alive !== false ? 'Hidup' : 'Meninggal Dunia'}</span></div>
+        <div class="detail-row"><span class="detail-label">Jenis Kelamin</span><span class="detail-val">${m.gender === 'M' ? 'Laki-laki' : 'Perempuan'}</span></div>
+        <div class="detail-row"><span class="detail-label">Tanggal Lahir</span><span class="detail-val">${formatDateIndo(m.birth_date)}</span></div>
+        <div class="detail-row"><span class="detail-label">Ayah</span><span class="detail-val">${father ? father.full_name : '-'}</span></div>
+        <div class="detail-row"><span class="detail-label">Ibu</span><span class="detail-val">${mother ? mother.full_name : '-'}</span></div>
+        <div class="detail-row"><span class="detail-label">Pasangan</span><span class="detail-val">${m.spouse_name || '-'}</span></div>
+        <div class="detail-row"><span class="detail-label">Status Pasangan</span><span class="detail-val">${m.spouse_is_alive !== false ? 'Hidup' : 'Meninggal Dunia'}</span></div>
+        <div class="detail-row"><span class="detail-label">Tgl Lahir Pasangan</span><span class="detail-val">${formatDateIndo(m.spouse_birth_date)}</span></div>
+        <div class="detail-row"><span class="detail-label">No. HP</span><span class="detail-val">${m.phone || '-'}</span></div>
+        <div class="detail-row"><span class="detail-label">Alamat</span><span class="detail-val">${m.address || '-'}</span></div>
+        <div class="detail-row"><span class="detail-label">Kota</span><span class="detail-val">${m.city || '-'}</span></div>
+        <div class="detail-row"><span class="detail-label">Titik Koordinat</span><span class="detail-val">${m.coordinates || '-'}</span></div>
+        ${mapEmbedHtml}
+      `;
+
+      document.getElementById('detailModal').style.display = 'flex';
+    }
+
+    function closeDetailModal() {
+      document.getElementById('detailModal').style.display = 'none';
+    }
+
+    function selectForEditById(memberId) {
+      const m = allMembers.find(item => item.id === memberId);
+      if (m) selectForEdit(m);
+    }
+
+    function selectForEdit(m) {
+      document.getElementById('editId').value = m.id;
+      document.getElementById('fullName').value = m.full_name || '';
+      document.getElementById('nickname').value = m.nickname || '';
+      
+      setDateToDropdowns('dob_day_main', 'dob_month_main', 'dob_year_main', m.birth_date);
+      setDateToDropdowns('dob_day_spouse', 'dob_month_spouse', 'dob_year_spouse', m.spouse_birth_date);
+
+      document.getElementById('gender').value = m.gender || 'M';
+      document.getElementById('isAlive').value = m.is_alive !== false ? 'true' : 'false';
+      document.getElementById('fatherId').value = m.father_id || '';
+      document.getElementById('motherId').value = m.mother_id || '';
+      document.getElementById('spouseName').value = m.spouse_name || '';
+      document.getElementById('spouseIsAlive').value = m.spouse_is_alive !== false ? 'true' : 'false';
+      document.getElementById('address').value = m.address || '';
+      document.getElementById('coordinates').value = m.coordinates || '';
+      document.getElementById('city').value = m.city || '';
+      document.getElementById('phone').value = m.phone || '';
+
+      updateSpouseLabel();
+      updateMap();
+
+      document.getElementById('form-container').style.display = 'block';
+      document.getElementById('search-edit-container').style.display = 'none';
+      document.getElementById('form-title-text').innerText = '✏️ Edit Data Keluarga';
+      document.getElementById('submitBtn').innerText = 'UPDATE DATA';
+    }
+
+    function resetForm() {
+      document.getElementById('editId').value = '';
+      document.getElementById('familyForm').reset();
+      
+      setDateToDropdowns('dob_day_main', 'dob_month_main', 'dob_year_main', '');
+      setDateToDropdowns('dob_day_spouse', 'dob_month_spouse', 'dob_year_spouse', '');
+
+      document.getElementById('coordinates').value = '';
+      document.getElementById('spouseIsAlive').value = 'true';
+      document.getElementById('childrenContainer').innerHTML = '';
+      document.getElementById('form-title-text').innerText = '➕ Tambah Data Keluarga';
+      document.getElementById('submitBtn').innerText = 'SIMPAN DATA';
+      updateSpouseLabel();
+      updateMap();
+      addChildRow();
+    }
+
+    /* POHON SILSILAH LOGIC */
+    function populateRootSelect() {
+      const rootSel = document.getElementById('rootSelect');
+      rootSel.innerHTML = '<option value="">-- Pilih Tetua / Kepala Keluarga --</option>';
+      allMembers.forEach(m => {
+        rootSel.innerHTML += `<option value="${m.id}">${m.full_name}</option>`;
+      });
+      
+      // Auto-select anggota teratas/pertama jika ada
+      if (allMembers.length > 0) {
+        rootSel.value = allMembers[0].id;
+        renderTree();
+      }
+    }
+
+    function buildNodeData(memberId) {
+      const member = allMembers.find(m => m.id === memberId);
+      if (!member) return null;
+
+      let titleName = member.full_name;
+      if (member.is_alive === false) {
+        titleName = (member.gender === 'M' ? 'Alm. ' : 'Almh. ') + titleName;
+      }
+
+      let subInfo = member.spouse_name ? `❤️ ${member.spouse_name}` : (member.nickname || '');
+      let children = allMembers.filter(m => m.father_id === memberId || m.mother_id === memberId);
+
+      return {
+        'name': titleName,
+        'title': subInfo,
+        'children': children.map(c => buildNodeData(c.id)).filter(Boolean)
+      };
+    }
+
+    function renderTree() {
+      const rootId = document.getElementById('rootSelect').value;
+      const container = $('#treeContainer');
+      container.empty();
+      
+      if (!rootId) {
+        container.html('<div style="text-align:center; font-size:12px; color:var(--text-muted);">Silakan pilih tetua terlebih dahulu.</div>');
+        return;
+      }
+
+      const treeData = buildNodeData(rootId);
+      if (treeData) {
+        container.orgchart({
+          'data': treeData,
+          'nodeContent': 'title',
+          'verticalLevel': 3,
+          'visibleLevel': 4
+        });
+      }
+    }
+
+    document.getElementById('familyForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('submitBtn');
+      const editId = document.getElementById('editId').value;
+      btn.innerText = 'MEMPROSES...';
+      btn.disabled = true;
+
+      const mainBirthDate = getDateFromDropdowns('dob_day_main', 'dob_month_main', 'dob_year_main');
+      const spouseBirthDate = getDateFromDropdowns('dob_day_spouse', 'dob_month_spouse', 'dob_year_spouse');
+
+      const payload = {
+        full_name: document.getElementById('fullName').value,
+        nickname: document.getElementById('nickname').value || null,
+        birth_date: mainBirthDate,
+        gender: document.getElementById('gender').value,
+        is_alive: document.getElementById('isAlive').value === 'true',
+        father_id: document.getElementById('fatherId').value || null,
+        mother_id: document.getElementById('motherId').value || null,
+        address: document.getElementById('address').value || null,
+        coordinates: document.getElementById('coordinates').value || null,
+        phone: document.getElementById('phone').value || null
+      };
+
+      const spouseName = document.getElementById('spouseName').value;
+      const city = document.getElementById('city').value;
+
+      if (spouseName) {
+        payload.spouse_name = spouseName;
+        payload.spouse_is_alive = document.getElementById('spouseIsAlive').value === 'true';
+      }
+      if (spouseBirthDate) payload.spouse_birth_date = spouseBirthDate;
+      if (city) payload.city = city;
+
+      let error;
+      let insertedMemberId = editId;
+
+      if (editId) {
+        const res = await supabaseClient.from('members').update(payload).eq('id', editId);
+        error = res.error;
+      } else {
+        const res = await supabaseClient.from('members').insert([payload]).select();
+        error = res.error;
+        if (res.data && res.data.length > 0) {
+          insertedMemberId = res.data[0].id;
+        }
+      }
+
+      if (!error && insertedMemberId) {
+        const childItems = document.querySelectorAll('.child-container-item');
+        const childrenPayloads = [];
+
+        childItems.forEach((item, index) => {
+          const childName = item.querySelector('.child-name').value.trim();
+          if (childName) {
+            const childGender = item.querySelector('.child-gender').value;
+            const childIsAlive = item.querySelector('.child-is-alive').value === 'true';
+            
+            const daySel = item.querySelector('.child-day').value;
+            const monthSel = item.querySelector('.child-month').value;
+            const yearSel = item.querySelector('.child-year').value;
+            let childDob = null;
+            if (daySel && monthSel && yearSel) {
+              childDob = `${yearSel}-${monthSel}-${daySel}`;
+            }
+
+            const currentGender = document.getElementById('gender').value;
+            childrenPayloads.push({
+              full_name: childName,
+              gender: childGender,
+              is_alive: childIsAlive,
+              birth_date: childDob,
+              father_id: currentGender === 'M' ? insertedMemberId : null,
+              mother_id: currentGender === 'F' ? insertedMemberId : null
+            });
+          }
+        });
+
+        if (childrenPayloads.length > 0) {
+          await supabaseClient.from('members').insert(childrenPayloads);
+        }
+      }
+
+      btn.disabled = false;
+
+      if (error) {
+        alert('Gagal: ' + error.message);
+        btn.innerText = editId ? 'UPDATE DATA' : 'SIMPAN DATA';
+      } else {
+        alert(editId ? 'Data berhasil diperbarui!' : 'Data berhasil disimpan!');
+        await loadData();
+        setMode('tambah');
+      }
+    });
+
+    populateDateDropdowns('dob_day_main', 'dob_month_main', 'dob_year_main');
+    populateDateDropdowns('dob_day_spouse', 'dob_month_spouse', 'dob_year_spouse');
+
+    updateSpouseLabel();
+    addChildRow();
+  </script>
+</body>
+</html>
